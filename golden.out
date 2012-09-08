@@ -1,0 +1,33 @@
+============================================================
+test 1
+W: file does not contain ape tag
+No valid APE tag found
+============================================================
+test 2
+W: file does not contain ape tag
+Found APE tag at offset 193
+Items:
+"Title" "--title--"
+============================================================
+test 3
+W: file does not contain ape tag
+Found APE tag at offset 193
+Items:
+"Title" "--title2--"
+"Year" "--year2--"
+W: truncating file from 303 to 281
+Found APE tag at offset 193
+Items:
+"Title" "--title3--"
+============================================================
+test 4
+W: file does not contain ape tag
+Found APE tag at offset 193
+Items:
+"Title" "--title2--"
+"Year" "--year2--"
+W: truncating file from 303 to 281
+Found APE tag at offset 193
+Items:
+"Title" "--title3--"
+done
