@@ -76,5 +76,4 @@ newtest
 ${APETAG} -i ${MP3_CLONE} -m update -f "Test.sh"=${BIN1} -p "Test"="File"
 ${APETAG} -i ${MP3_CLONE} -m read
 
-
 echo "done"
