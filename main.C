@@ -136,6 +136,8 @@ LOCALFUN VOID WriteLittleEndianUint32(char *cp, UINT32 i)
 }
 
 // ========================================================================
+// One piece of metadata - a tag/value pair
+// ========================================================================
 class ITEM
 {
   private:
@@ -177,8 +179,10 @@ struct ITEM_LESS
 };
 
 
-typedef set<ITEM*,ITEM_LESS> ITEM_SET ;
+typedef set<ITEM*,ITEM_LESS> ITEM_SET;
 
+// ========================================================================
+// Collection of all items associated with a file
 // ========================================================================
 class TAG
 {
@@ -190,7 +194,7 @@ class TAG
     ITEM_SET  _items;
 
   public:
-    TAG(UINT32 file_length,UINT32 tag_offset, UINT32 num_items) :
+    TAG(UINT32 file_length, UINT32 tag_offset, UINT32 num_items) :
         _file_length(file_length),
         _tag_offset(tag_offset),
         _num_items(num_items)
@@ -539,45 +543,40 @@ SWITCH SwitchMode(
 int Usage()
 {
     cout << "APETAG version: " << ExtractVersion() <<
-        "  (C) Robert Muth 2003 and onwards\n";
-    cout << "Web: http://www.muth.org/Robert/Apetag\n";
-    cout << "\n";
+        "  (C) Robert Muth 2003 and onwards";
+    cout << R"STR(
+Web: http://www.muth.org/Robert/Apetag
 
-    cout << "Usage: apetag -i input-file -m mode  {[-p|-f] tag=value}*\n";
-    cout << "\n";
+Usage: apetag -i input-file -m mode  {[-p|-f] tag=value}*
 
-    cout << "change or create APE tag for file input-file\n";
-    cout << "\n";
-    cout << "apetag operates in one of three modes:\n";
+change or create APE tag for file input-file
 
-    cout << "\n";
-    cout << "Mode read (default):\n";
-    cout << "\tread and dump APE tag if present\n";
-    cout << "\tdump an item to a file with the -f option\n";
-    cout << "\t\te.g.: -f \"Cover Art (Front)\"=cover.jpg \n";
-    cout << "\tdump item \"Cover Art (Front)\" to file cover.jpg\n";
+apetag operates in one of three modes:
+Mode read (default):
+    read and dump APE tag if present
+    dump an item to a file with the -f option
+        e.g.: -f \"Cover Art (Front)\"=cover.jpg
+    dump item \"Cover Art (Front)\" to file cover.jpg
 
-    cout << "\n";
-    cout << "Mode update:\n";
-    cout << "\tchange selected key,value pairs\n";
-    cout << "\tthe pairs are specified with the -p or -f options\n";
-    cout << "\t\te.g.: -p Artist=Nosferaru -p Album=Bite \n";
-    cout << "\tremove item Artist, change item Album to Cool\n";
-    cout << "\ttags not listed with the -p or -f option will remain unchanged\n";
-    cout << "\ttags with empty vaalues are removed\n";
+Mode update:
+    change selected key,value pairs
+    the pairs are specified with the -p or -f options
+        e.g.: -p Artist=Nosferaru -p Album=Bite 
+    remove item Artist, change item Album to Cool
+    tags not listed with the -p or -f option will remain unchanged
+    tags with empty vaalues are removed
 
-    cout << "\n";
-    cout << "Mode overwrite:\n";
-    cout << "\tOverwrite all the tags with items specified by the -p or -f options\n";
-    cout << "\ttags not listed with the -p or -f option will be removed\n";
-    cout << "\tthis mode is also used to create ape tags initially\n";
+Mode overwrite:
+    Overwrite all the tags with items specified by the -p or -f options
+    tags not listed with the -p or -f option will be removed
+    this mode is also used to create ape tags initially
 
-    cout << "\n";
-    cout << "Mode erase:\n";
-    cout << "\tRemove the APE tag from file input-file\n";
+Mode erase:
+    Remove the APE tag from file input-file
 
-    cout << "\n";
-    cout << "Switch summary:\n\n";
+Switch summary:
+
+)STR";
     cout << SWITCH::SwitchSummary();
     return -1;
 }
@@ -811,7 +810,7 @@ int main(int argc,char *argv[])
 
             Debug("adding (" + key + "," + filename + " <Binary>)\n");
 
-            tag->AddItem( new ITEM(key, val,2) );
+            tag->AddItem(new ITEM(key, val, 2));
         }
 
         WriteApeTag(input, tag.get(), filename);
