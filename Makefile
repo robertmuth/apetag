@@ -20,7 +20,7 @@ SOURCES = basic.C switch.C main.C
 
 OBJECTS = $(SOURCES:.C=.o)
 
-HEADERS =
+HEADERS = basic.H switch.H
 
 CXX = g++
 CXX = clang++
@@ -50,6 +50,8 @@ clean:
 dep:
 	makedepend -Y $(SOURCES)
 
+format:
+	clang-format -i $(SOURCES) $(HEADERS)
 test: apetag
 	./test.sh > test.out
 	diff test.out golden.out

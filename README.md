@@ -1,21 +1,15 @@
-# ======================================================================
-#
 # Apetag/Tagdir readme file
-#
-# ======================================================================
 
 This package contains three tagging related tools: apetag, tagdir, rmid3tag
 
-apetag
-======
+## apetag
 
 Apetag is command line tagging tool for multimedia files such as
 monkey's audio and mpc using the APE 2.0 standard.
 
 For usage information run "apetag -h"
 
-tagdir
-======
+## tagdir
 
 Tagdir is a simple python script that will automatically invoke an
 appropriate tagging tool on all tracks in the current directory
@@ -29,11 +23,11 @@ tools are apetag for mpc files and metaflac for flac files.
 
 For usage information run "tagdir.py -h"
 
-rmid3tag
-========
+## rmid3tag
 
 Rmid3tag is a simple python script that will remove id3 tags from the
 end of music files.
 
 Please send comments and suggestions to robert at muth dot org
 http://www.muth.org/Robert
+
