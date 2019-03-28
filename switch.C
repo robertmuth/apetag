@@ -31,350 +31,291 @@ using namespace std;
 #include "switch.H"
 
 // ========================================================================
-UINT32 SWITCH::SwitchNumber()
-{
-    UINT32 n = 0;
+UINT32 SWITCH::SwitchNumber() {
+  UINT32 n = 0;
 
-    for( SWITCH *sw = _list; sw ; sw = sw->_next )
-    {
-        n++;
+  for (SWITCH *sw = _list; sw; sw = sw->_next) {
+    n++;
+  }
+
+  return n;
+}
+
+// ========================================================================
+SWITCH *SWITCH::SwitchFind(const string &name, BOOL enabled) {
+  for (SWITCH *sw = _list; sw; sw = sw->_next) {
+    if (enabled && !sw->_enabled)
+      continue;
+
+    if (sw->_name == name)
+      return sw;
+  }
+
+  return 0;
+}
+
+// ========================================================================
+VOID SWITCH::FamilyDisable(const string &family) {
+  for (SWITCH *sw = _list; sw; sw = sw->_next) {
+    if (0 == sw->_family.find(family)) {
+      sw->_enabled = 0;
     }
-
-    return n;
+  }
 }
 
 // ========================================================================
-SWITCH *SWITCH::SwitchFind(const string& name, BOOL enabled)
-{
-    for( SWITCH *sw = _list; sw ; sw = sw->_next )
-    {
-        if( enabled && !sw->_enabled) continue;
-
-        if( sw->_name == name ) return sw;
+VOID SWITCH::FamilyEnable(const string &family) {
+  for (SWITCH *sw = _list; sw; sw = sw->_next) {
+    if (0 == sw->_family.find(family)) {
+      sw->_enabled = 1;
     }
-
-    return 0;
+  }
 }
 
 // ========================================================================
-VOID SWITCH::FamilyDisable(const string& family)
-{
-    for( SWITCH *sw = _list; sw ; sw = sw->_next )
-    {
-        if( 0 == sw->_family.find( family)  )
-        {
-            sw->_enabled = 0;
-        }
-    }
+VOID SWITCH::SwitchDisable(const string &name) {
+  SWITCH *sw = SwitchFind(name);
+  ASSERTX(sw);
+  sw->_enabled = 0;
 }
 
 // ========================================================================
-VOID SWITCH::FamilyEnable(const string& family)
-{
-    for( SWITCH *sw = _list; sw ; sw = sw->_next )
-    {
-        if( 0 == sw->_family.find( family)  )
-        {
-            sw->_enabled = 1;
-        }
-    }
+VOID SWITCH::SwitchEnable(const string &name) {
+  SWITCH *sw = SwitchFind(name);
+  ASSERTX(sw);
+  sw->_enabled = 1;
 }
 
 // ========================================================================
-VOID SWITCH::SwitchDisable(const string& name)
-{
-    SWITCH *sw = SwitchFind(name);
-    ASSERTX( sw );
-    sw->_enabled = 0;
+UINT32 SWITCH::ValueNumber() const {
+  UINT32 n = 0;
+
+  for (VALUE *v = _value; v; v = v->_next)
+    n++;
+  return n;
 }
 
 // ========================================================================
-VOID SWITCH::SwitchEnable(const string& name)
-{
-    SWITCH *sw = SwitchFind(name);
-    ASSERTX( sw );
-    sw->_enabled = 1;
+VALUE *SWITCH::ValueGetByIndex(UINT32 index) const {
+  VALUE *v;
+  for (v = _value; v && index > 0; v = v->_next, index--)
+    ;
+
+  ASSERTX(v != 0);
+  return v;
 }
 
 // ========================================================================
-UINT32 SWITCH::ValueNumber() const
-{
-    UINT32 n = 0;
-
-    for( VALUE *v = _value; v ; v = v->_next )
-        n++;
-    return n;
-}
-
-
-// ========================================================================
-VALUE *SWITCH::ValueGetByIndex(UINT32 index) const
-{
+VALUE *SWITCH::ValueAdd(const string &value) {
+  if (_mode == SWITCH_MODE_OVERWRITE) {
+    delete _value;
+    _value = new VALUE(value);
+    return _value;
+  } else if (_mode == SWITCH_MODE_ACCUMULATE) {
     VALUE *v;
-    for(v= _value; v  && index >0; v = v->_next, index--)
-        ;
 
+    for (v = _value; v->_next; v = v->_next)
+      ;
 
-    ASSERTX( v != 0);
-    return v;
+    v->_next = new VALUE(value);
+    return v->_next;
+  } else {
+    ASSERTZ("unknown mode\n");
+    return 0;
+  }
 }
 
 // ========================================================================
-VALUE *SWITCH::ValueAdd(const string& value)
-{
-    if( _mode == SWITCH_MODE_OVERWRITE )
-    {
-        delete _value;
-        _value = new VALUE(value);
-        return _value;
-    }
-    else if( _mode == SWITCH_MODE_ACCUMULATE )
-    {
-        VALUE *v;
+static int cmp(const void *x1, const void *x2) {
+  SWITCH *o1 = *(SWITCH **)x1;
+  SWITCH *o2 = *(SWITCH **)x2;
 
-        for( v = _value; v->_next; v = v->_next )
-            ;
-
-        v->_next = new VALUE(value);
-        return v->_next;
-    }
-    else
-    {
-        ASSERTZ("unknown mode\n");
-        return 0;
-    }
+  int result = o1->Family().compare(o2->Family());
+  if (result == 0)
+    result = o1->Name().compare(o2->Name());
+  return result;
 }
 
 // ========================================================================
-static int cmp(const void *x1,const void *x2)
-{
-    SWITCH *o1 = *(SWITCH **) x1;
-    SWITCH *o2 = *(SWITCH **) x2;
-
-    int result = o1->Family().compare( o2->Family());
-    if( result == 0 ) result = o1->Name().compare( o2->Name());
-    return result;
+string StringLong(SWITCH_TYPE type) {
+  switch (type) {
+  case SWITCH_TYPE_BOOL:
+    return "";
+  case SWITCH_TYPE_INT32:
+    return "integer-32";
+  case SWITCH_TYPE_FLT32:
+    return "floa-32";
+  case SWITCH_TYPE_STRING:
+    return "string";
+  default:
+    ASSERTX(0);
+    return "";
+  }
 }
 
 // ========================================================================
-string StringLong( SWITCH_TYPE type)
-{
-    switch (type )
-    {
-    case SWITCH_TYPE_BOOL:
-        return "";
-    case SWITCH_TYPE_INT32:
-        return "integer-32";
-    case SWITCH_TYPE_FLT32:
-        return "floa-32";
-    case SWITCH_TYPE_STRING:
-        return "string";
-    default:
-        ASSERTX(0);
-        return "";
-    }
+string StringShort(SWITCH_TYPE type) {
+  switch (type) {
+  case SWITCH_TYPE_BOOL:
+    return "B";
+  case SWITCH_TYPE_INT32:
+    return "I";
+  case SWITCH_TYPE_FLT32:
+    return "F";
+  case SWITCH_TYPE_STRING:
+    return "S";
+  default:
+    ASSERTX(0);
+    return "X";
+  }
 }
 
 // ========================================================================
-string StringShort( SWITCH_TYPE type)
-{
-    switch (type )
-    {
-    case SWITCH_TYPE_BOOL:
-        return "B";
-    case SWITCH_TYPE_INT32:
-        return "I";
-    case SWITCH_TYPE_FLT32:
-        return "F";
-    case SWITCH_TYPE_STRING:
-        return "S";
-    default:
-        ASSERTX(0);
-        return "X";
-    }
+string StringShort(SWITCH_MODE mode) {
+  switch (mode) {
+  case SWITCH_MODE_ACCUMULATE:
+    return "AC";
+  case SWITCH_MODE_OVERWRITE:
+    return "OV";
+  default:
+    ASSERTX(0);
+    return "XZ";
+  }
 }
 
 // ========================================================================
-string StringShort( SWITCH_MODE mode)
-{
-    switch (mode )
-    {
-    case SWITCH_MODE_ACCUMULATE:
-        return "AC";
-    case SWITCH_MODE_OVERWRITE:
-        return "OV";
-    default:
-        ASSERTX(0);
-        return "XZ";
-    }
-}
+string SWITCH::SwitchSummary(BOOL enabled, BOOL listing) {
+  typedef SWITCH *PSWITCH; // for array new below to supress warning
 
+  INT32 count = SWITCH::SwitchNumber();
 
-// ========================================================================
-string SWITCH::SwitchSummary(BOOL enabled, BOOL listing)
-{
-    typedef SWITCH *PSWITCH; // for array new below to supress warning
+  SWITCH **array = new PSWITCH[count];
 
-    INT32 count = SWITCH::SwitchNumber();
+  INT32 i = 0;
+  for (SWITCH *sw = _list; sw; sw = sw->_next) {
+    array[i] = sw;
+    i++;
+  }
 
-    SWITCH **array  = new PSWITCH[count];
+  ASSERTX(count == i);
 
-    INT32 i=0;
-    for( SWITCH *sw = _list; sw; sw = sw->_next)
-    {
-        array[i] = sw;
-        i++;
-    }
+  qsort(array, count, sizeof(SWITCH *), cmp);
 
-    ASSERTX( count == i );
+  string ostr;
 
-    qsort( array, count, sizeof(SWITCH *),cmp);
+  if (listing) {
+    ostr += ljstr("Family", 15 + 1);
+    ostr += ljstr("Knob", 20 + 1);
+    ostr += ljstr("Flag", 4 + 1);
+    ostr += ljstr("Mode", 4 + 1);
+    ostr += ljstr("Type", 4 + 1);
+    ostr += string("Value");
+  }
 
-    string ostr;
+  for (i = 0; i < count; i++) {
+    SWITCH *sw = array[i];
 
-    if( listing )
-    {
-        ostr += ljstr("Family",15+1);
-        ostr += ljstr("Knob", 20+1);
-        ostr += ljstr("Flag", 4+1);
-        ostr += ljstr("Mode", 4+1);
-        ostr += ljstr("Type", 4+1);
-        ostr += string("Value");
+    if (enabled && !sw->_enabled)
+      continue;
 
-    }
+    if (listing) {
+      ostr += ljstr(sw->_family, 15 + 1);
+      ostr += ljstr(sw->_name, 20 + 1);
+      ostr += "[" + string(sw->_enabled ? "E" : "_") + "]  ";
+      ostr += StringShort(sw->_mode) + "  ";
+      ostr += StringShort(sw->_type) + "  ";
+      ostr += "[ ";
 
-    for( i=0; i<count; i++ )
-    {
-        SWITCH *sw = array[i];
+      BOOL add_space = 0;
 
-        if( enabled && !sw->_enabled ) continue;
+      for (VALUE *v = sw->_value; v; v = v->_next) {
+        cout << "found " << v->_value << endl;
 
-        if( listing )
-        {
-            ostr += ljstr(sw->_family,15+1);
-            ostr += ljstr(sw->_name,20+1);
-            ostr += "[" + string(sw->_enabled ? "E" : "_") + "]  ";
-            ostr += StringShort(sw->_mode) + "  ";
-            ostr += StringShort(sw->_type) + "  ";
-            ostr += "[ ";
-
-            BOOL add_space = 0;
-
-            for( VALUE *v = sw->_value; v; v = v->_next )
-            {
-                cout << "found " << v->_value << endl;
-
-                if( add_space )
-                {
-                    ostr += " ";
-                }
-                else
-                {
-                    add_space = 1;
-                }
-
-                ostr += v->_value;
-            }
-
-            ostr += "]\n";
-        }
-        else
-        {
-            ostr += sw->_name +  " " + StringLong(sw->_type) + "   default [";
-
-            string sep = "";
-            for( VALUE *v = sw->_value; v; v = v->_next )
-            {
-                ostr += sep + "\"" + v->_value + "\"";
-                sep = "  ";
-            }
-
-            ostr += "]\n";
-
-            ostr += Reformat(sw->_purpose,"\t",20,75);
+        if (add_space) {
+          ostr += " ";
+        } else {
+          add_space = 1;
         }
 
+        ostr += v->_value;
+      }
 
+      ostr += "]\n";
+    } else {
+      ostr += sw->_name + " " + StringLong(sw->_type) + "   default [";
+
+      string sep = "";
+      for (VALUE *v = sw->_value; v; v = v->_next) {
+        ostr += sep + "\"" + v->_value + "\"";
+        sep = "  ";
+      }
+
+      ostr += "]\n";
+
+      ostr += Reformat(sw->_purpose, "\t", 20, 75);
     }
+  }
 
-    delete [] array;
-    return ostr;
+  delete[] array;
+  return ostr;
 }
 
 // ========================================================================
 
 SWITCH *SWITCH::_list = 0;
 
-
 // ========================================================================
 #ifdef STAND_ALONE
 
-SWITCH SwicthVerbose("verbose","general",SWITCH_TYPE_BOOL, SWITCH_MODE_OVERWRITE,"0",
-    "enable verbose message output");
+SWITCH SwicthVerbose("verbose", "general", SWITCH_TYPE_BOOL,
+                     SWITCH_MODE_OVERWRITE, "0",
+                     "enable verbose message output");
 
-SWITCH SwitchNumber("number","general",SWITCH_TYPE_INT32, SWITCH_MODE_OVERWRITE,"666",
-    "blurb");
+SWITCH SwitchNumber("number", "general", SWITCH_TYPE_INT32,
+                    SWITCH_MODE_OVERWRITE, "666", "blurb");
 
+SWITCH SwitchFloat("float", "general", SWITCH_TYPE_FLT32, SWITCH_MODE_OVERWRITE,
+                   "0.666", "blurb");
 
-SWITCH SwitchFloat("float","general",SWITCH_TYPE_FLT32, SWITCH_MODE_OVERWRITE,"0.666",
-    "blurb");
+SWITCH SwicthTest("test", "general", SWITCH_TYPE_BOOL, SWITCH_MODE_OVERWRITE,
+                  "0", "blurb");
 
-SWITCH SwicthTest("test","general",SWITCH_TYPE_BOOL, SWITCH_MODE_OVERWRITE,"0",
-    "blurb");
+SWITCH opt_odouble("odouble", "optimize", SWITCH_TYPE_STRING,
+                   SWITCH_MODE_OVERWRITE, STRING_INVALID, "blurb");
 
+int main(int argc, char *argv[]) {
+  cout << "HELP\n"
+          "==========================\n";
 
-SWITCH opt_odouble("odouble","optimize",SWITCH_TYPE_STRING, SWITCH_MODE_OVERWRITE,STRING_INVALID,
-    "blurb");
+  cout += SWITCH::SwitchSummary(1, 0);
 
+  for (argc--, argv++; argc > 0; argc--, argv++) {
+    if (*argv[0] == '-') {
+      SWITCH *sw = SWITCH::SwitchFind(argv[0] + 1);
+      if (sw == 0) {
+        cout += "bad option " += argv[0] += endl;
+        exit(-1);
+      }
 
+      cout += "good option " += argv[0] += endl;
 
-int main(int argc, char *argv[])
-{
-  cout <<
-    "HELP\n"
-    "==========================\n";
-
-
-  cout += SWITCH::SwitchSummary(1,0);
-
-
-    for( argc--, argv++; argc > 0;  argc--, argv++)
-    {
-        if( *argv[0] == '-' )
-        {
-            SWITCH  *sw = SWITCH::SwitchFind(argv[0]+1);
-            if( sw == 0 )
-            {
-                cout += "bad option " += argv[0] += endl;
-                exit(-1);
-            }
-
-            cout += "good option " += argv[0] += endl;
-
-            if( sw->Type() == SWITCH_TYPE_BOOL )
-            {
-                sw->ValueAdd("1");
-            }
-            else
-            {
-                ASSERTX( argc > 0);
-                argc--;
-                argv++;
-                sw->ValueAdd(argv[0]);
-
-
-            }
-
-        }
+      if (sw->Type() == SWITCH_TYPE_BOOL) {
+        sw->ValueAdd("1");
+      } else {
+        ASSERTX(argc > 0);
+        argc--;
+        argv++;
+        sw->ValueAdd(argv[0]);
+      }
     }
+  }
 
-    cout <<
-        "STATS AFTER\n"
-        "==========================\n";
+  cout << "STATS AFTER\n"
+          "==========================\n";
 
-    cout << SWITCH::SwitchSummary(1,1);
+  cout << SWITCH::SwitchSummary(1, 1);
 
-    return 0;
+  return 0;
 }
 
 #endif

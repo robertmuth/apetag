@@ -22,142 +22,113 @@
 #include <cstdlib>
 #include <string>
 
-typedef enum
-{
-    SWITCH_TYPE_INVALID,
-    SWITCH_TYPE_BOOL,
-    SWITCH_TYPE_INT32,
-    SWITCH_TYPE_FLT32,
-    SWITCH_TYPE_STRING,
-    SWITCH_TYPE_LAST
-}SWITCH_TYPE;
+typedef enum {
+  SWITCH_TYPE_INVALID,
+  SWITCH_TYPE_BOOL,
+  SWITCH_TYPE_INT32,
+  SWITCH_TYPE_FLT32,
+  SWITCH_TYPE_STRING,
+  SWITCH_TYPE_LAST
+} SWITCH_TYPE;
 
-typedef enum
-{
-    SWITCH_MODE_INVALID,
-    SWITCH_MODE_OVERWRITE,
-    SWITCH_MODE_ACCUMULATE,
-    SWITCH_MODE_LAST
-}SWITCH_MODE;
+typedef enum {
+  SWITCH_MODE_INVALID,
+  SWITCH_MODE_OVERWRITE,
+  SWITCH_MODE_ACCUMULATE,
+  SWITCH_MODE_LAST
+} SWITCH_MODE;
 
 const std::string STRING_INVALID("*");
 
-class VALUE
-{
- public:
-    VALUE* _next;
-    const std::string _value;
+class VALUE {
+public:
+  VALUE *_next;
+  const std::string _value;
 
-    VALUE(const std::string& value) :
-        _next(0),
-        _value(value)
-        {}
+  VALUE(const std::string &value) : _next(0), _value(value) {}
 
-    BOOL ValBool() {return 0!=strtol(_value.c_str(), NULL,0); }
-    const std::string& ValString() { return _value;}
-    UINT32 ValInt32()  { return (INT32) strtol(_value.c_str(), NULL,0);}
-    FLT32 ValFlt32()  { return (FLT32) strtod(_value.c_str(), NULL);}
+  BOOL ValBool() { return 0 != strtol(_value.c_str(), NULL, 0); }
+  const std::string &ValString() { return _value; }
+  UINT32 ValInt32() { return (INT32)strtol(_value.c_str(), NULL, 0); }
+  FLT32 ValFlt32() { return (FLT32)strtod(_value.c_str(), NULL); }
 };
 
+class SWITCH {
+private:
+  static SWITCH *_list;
 
-class SWITCH
-{
-  private:
-    static SWITCH* _list;
+private:
+  SWITCH *_next;
+  const std::string _family;
+  const std::string _name;
+  const std::string _purpose;
+  const SWITCH_TYPE _type;
+  const SWITCH_MODE _mode;
+  BOOL _enabled;
+  VALUE *_value;
 
-  private:
-    SWITCH* _next;
-    const std::string _family;
-    const std::string _name;
-    const std::string _purpose;
-    const SWITCH_TYPE _type;
-    const SWITCH_MODE _mode;
-    BOOL  _enabled;
-    VALUE* _value;
+public:
+  static UINT32 SwitchNumber();
 
-  public:
-    static UINT32 SwitchNumber();
+  static VOID FamilyDisable(const std::string &family);
 
-    static VOID FamilyDisable(const std::string& family);
+  static VOID FamilyEnable(const std::string &family);
 
-    static VOID FamilyEnable(const std::string& family);
+  static VOID SwitchDisable(const std::string &name);
 
-    static VOID SwitchDisable(const std::string& name);
+  static VOID SwitchEnable(const std::string &name);
 
-    static VOID SwitchEnable(const std::string& name);
+  static std::string SwitchSummary(BOOL enabled = 1, BOOL listing = 0);
 
-    static std::string SwitchSummary(BOOL enabled =1, BOOL listing =0);
+  static SWITCH *SwitchFind(const std::string &name, BOOL enabled = 1);
 
-    static SWITCH *SwitchFind(const std::string& name, BOOL enabled=1);
+public:
+  SWITCH_TYPE Type() const { return _type; }
 
-  public:
-    SWITCH_TYPE Type() const {return _type;}
+  SWITCH_MODE Mode() const { return _mode; }
 
-    SWITCH_MODE Mode() const {return _mode;}
+  std::string Family() const { return _family; }
 
-    std::string Family() const {return _family;}
+  std::string Name() const { return _name; }
 
-    std::string Name() const {return _name;}
+  UINT32 ValueNumber() const;
 
-    UINT32 ValueNumber() const;
+  VALUE *ValueGetByIndex(UINT32 index) const;
 
-    VALUE *ValueGetByIndex(UINT32 index) const;
+  VALUE *ValueAdd(const std::string &value);
 
-    VALUE *ValueAdd(const std::string& value);
+  SWITCH(const std::string &name, const std::string &family, SWITCH_TYPE type,
+         SWITCH_MODE mode, const std::string &value, const std::string &purpose)
+      : _next(_list), _family(family), _name(name), _purpose(purpose),
+        _type(type), _mode(mode), _enabled(1), _value(new VALUE(value)) {
+    SWITCH *sw = SwitchFind(name); // duplicate check
 
-    SWITCH(const std::string& name, const std::string& family,
-           SWITCH_TYPE  type, SWITCH_MODE mode,
-           const std::string& value, const std::string& purpose) :
-        _next( _list),
-        _family(family),
-        _name(name),
-        _purpose(purpose),
-        _type(type),
-        _mode(mode),
-        _enabled(1),
-        _value( new VALUE(value) )
-    {
-        SWITCH* sw = SwitchFind(name);         // duplicate check
-
-        if( sw != 0 )
-        {
-            ASSERTZ("duplicate switch " + name + "\n");
-        }
-
-        _list = this;
+    if (sw != 0) {
+      ASSERTZ("duplicate switch " + name + "\n");
     }
 
-    BOOL ValueBool(UINT32 index=0) const
-    {
-        ASSERTX( _type == SWITCH_TYPE_BOOL );
-        return ValueGetByIndex(index)->ValBool();
-    }
+    _list = this;
+  }
 
-    INT32 ValueInt32(UINT32 index=0) const
-    {
-        ASSERTX( _type == SWITCH_TYPE_INT32 );
-        return ValueGetByIndex(index)->ValInt32();
-    }
+  BOOL ValueBool(UINT32 index = 0) const {
+    ASSERTX(_type == SWITCH_TYPE_BOOL);
+    return ValueGetByIndex(index)->ValBool();
+  }
 
-    const std::string& ValueString(UINT32 index=0) const
-    {
-        ASSERTX( _type == SWITCH_TYPE_STRING );
-        return ValueGetByIndex(index)->ValString();
-    }
+  INT32 ValueInt32(UINT32 index = 0) const {
+    ASSERTX(_type == SWITCH_TYPE_INT32);
+    return ValueGetByIndex(index)->ValInt32();
+  }
 
-    FLT32 ValueFlt32(UINT32 index=0) const
-    {
-        ASSERTX( _type == SWITCH_TYPE_FLT32);
-        return ValueGetByIndex(index)->ValFlt32();
-    }
+  const std::string &ValueString(UINT32 index = 0) const {
+    ASSERTX(_type == SWITCH_TYPE_STRING);
+    return ValueGetByIndex(index)->ValString();
+  }
+
+  FLT32 ValueFlt32(UINT32 index = 0) const {
+    ASSERTX(_type == SWITCH_TYPE_FLT32);
+    return ValueGetByIndex(index)->ValFlt32();
+  }
 };
 
 #endif
-
-
-
-
-
-
-
-
