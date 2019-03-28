@@ -22,6 +22,7 @@
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
+#include <map>
 #include <memory>
 #include <set>
 #include <sstream>
@@ -160,6 +161,11 @@ class ITEM
         return _value;
     }
 
+    const UINT32& Flags() const
+    {
+        return _flags;
+    }
+
 };
 
 struct ITEM_LESS
@@ -188,7 +194,9 @@ class TAG
         _file_length(file_length),
         _tag_offset(tag_offset),
         _num_items(num_items)
-    {}
+    {
+        Debug("num items: " + hexstr(_num_items) + "\n");
+    }
 
     VOID DelAllItems()
     {
@@ -215,7 +223,7 @@ class TAG
     VOID AddItem(ITEM *item)
     {
         DelItem(item);
-        Debug("adding item with key " + item->Key() + "\n");
+        Debug("adding item with key " + item->Key() + " and flags " + hexstr(item->Flags()) + "\n");
         _items.insert(item);
     }
 
@@ -309,6 +317,8 @@ LOCALFUN VOID WriteApeItems(fstream& input, const TAG *tag)
     {
         const ITEM *item = *it;
 
+        const UINT32& flags = item->Flags();
+
         const string& value = item->Value();
         const UINT32 value_length = value.length();
 
@@ -317,12 +327,12 @@ LOCALFUN VOID WriteApeItems(fstream& input, const TAG *tag)
         const string& key = item->Key();
         const UINT32 key_length = key.length();
 
-        Info("writing item " +  key + " " +  value + "\n");
+        Info("writing item " +  key + " " +  value + " " +  hexstr(flags) + "\n");
 
         WriteLittleEndianUint32(buf, value_length);
         input.write(buf, 4);
 
-        WriteLittleEndianUint32(buf, 0); // flags
+        WriteLittleEndianUint32(buf, flags); // flags
         input.write(buf, 4);
 
         input.write(key.c_str(),key_length );
@@ -471,6 +481,8 @@ LOCALFUN TAG* ReadAndProcessApeHeader(fstream& input)
         const UINT32 f = ReadLittleEndianUint32(cp);
         cp +=4;
 
+        UINT32 flags = f;
+
         string key(cp);
 
         cp += 1+  key.length();
@@ -484,7 +496,7 @@ LOCALFUN TAG* ReadAndProcessApeHeader(fstream& input)
         cp += l;
 
         Info("tag " + decstr(i) + ":  len: " + decstr(l) +
-             "flags: " + hexstr(f) + "  key: " + key + "  value: " + value + "\n");
+             "  flags: " + hexstr(f) + "  key: " + key + "  value: " + value + "\n");
         tag->AddItem( new ITEM(key,value,flags) );
     }
 
@@ -510,10 +522,18 @@ SWITCH SwitchPair(
     "specify ape tag and value, arguments must have form tag=val, "
     "this option can be used multiple times");
 
+
+SWITCH SwitchFilePair(
+    "f", "general",
+    SWITCH_TYPE_STRING, SWITCH_MODE_ACCUMULATE, "$none$",
+    "specify ape tag and file pathname, arguments must have form "
+    "tag=pathname, this option can be used multiple times");
+
+
 SWITCH SwitchMode(
     "m","general",
     SWITCH_TYPE_STRING, SWITCH_MODE_OVERWRITE,"read",
-    "specify mode (read, update or overwrite)");
+    "specify mode (read, update, overwrite, or erase)");
 
 // ========================================================================
 int Usage()
@@ -523,7 +543,7 @@ int Usage()
     cout << "Web: http://www.muth.org/Robert/Apetag\n";
     cout << "\n";
 
-    cout << "Usage: apetag -i input-file -m mode  {-p tag=value}*\n";
+    cout << "Usage: apetag -i input-file -m mode  {[-p|-f] tag=value}*\n";
     cout << "\n";
 
     cout << "change or create APE tag for file input-file\n";
@@ -533,21 +553,28 @@ int Usage()
     cout << "\n";
     cout << "Mode read (default):\n";
     cout << "\tread and dump APE tag if present\n";
+    cout << "\tdump an item to a file with the -f option\n";
+    cout << "\t\te.g.: -f \"Cover Art (Front)\"=cover.jpg \n";
+    cout << "\tdump item \"Cover Art (Front)\" to file cover.jpg\n";
 
     cout << "\n";
     cout << "Mode update:\n";
     cout << "\tchange selected key,value pairs\n";
-    cout << "\tthe pairs are specified with the -p options\n";
+    cout << "\tthe pairs are specified with the -p or -f options\n";
     cout << "\t\te.g.: -p Artist=Nosferaru -p Album=Bite \n";
     cout << "\tremove item Artist, change item Album to Cool\n";
-    cout << "\ttags not listed with the -p option will remain unchanged\n";
+    cout << "\ttags not listed with the -p or -f option will remain unchanged\n";
     cout << "\ttags with empty vaalues are removed\n";
 
     cout << "\n";
     cout << "Mode overwrite:\n";
-    cout << "\tOverwrite all the tags with items specified by the -p options\n";
-    cout << "\ttags not listed with the -p option will be removed\n";
+    cout << "\tOverwrite all the tags with items specified by the -p or -f options\n";
+    cout << "\ttags not listed with the -p or -f option will be removed\n";
     cout << "\tthis mode is also used to create ape tags initially\n";
+
+    cout << "\n";
+    cout << "Mode erase:\n";
+    cout << "\tRemove the APE tag from file input-file\n";
 
     cout << "\n";
     cout << "Switch summary:\n\n";
@@ -623,6 +650,8 @@ int main(int argc,char *argv[])
         }
         else
         {
+            map<string, string> items;
+
             cout << "Found APE tag at offset " + decstr(tag->TagOffset()) + "\n";
             cout << "Items:\n";
             for (ITEM_SET::const_iterator it = tag->Items().begin();
@@ -630,7 +659,74 @@ int main(int argc,char *argv[])
                  ++it)
             {
                 const ITEM *item = *it;
-                cout << "\"" + item->Key() + "\" \"" + item->Value() + "\"\n";
+
+                const string& key = item->Key();
+                const string& value = item->Value();
+                const UINT32& flags = item->Flags();
+
+                items[key] = value;
+
+                if (flags == 2)
+                {
+                    UINT32 pos = value.find('\0');
+                    string filename = value;
+                    filename.resize(pos);
+
+                    cout << "\"" + key + "\" \"" + filename + "\"" + " <Binary>\n";
+                }
+                else
+                {
+                    cout << "\"" + key + "\" \"" + value + "\"\n";
+                }
+            }
+
+            const UINT32 num_file_items = SwitchFilePair.ValueNumber();
+
+            // we skip the first entry
+            for (UINT32 i=1; i < num_file_items; i++)
+            {
+                const string& pair =  SwitchFilePair.ValueString(i);
+
+                const UINT32 len = pair.length();
+
+                UINT32 pos_equal_sign;
+                for (pos_equal_sign = 0; pos_equal_sign < len; pos_equal_sign++)
+                {
+                    if( pair[pos_equal_sign] == '=' ) break;
+                }
+
+                if (pos_equal_sign >= len )
+                {
+                    Error("pair : " + pair + " does not contain a \'=\'\n");
+                }
+
+                string key = pair.substr(0,pos_equal_sign);
+                pos_equal_sign++;
+                string val = pair.substr(pos_equal_sign,len-pos_equal_sign);
+
+                if (items.count(key))
+                {
+                    const string& value = items[key];
+
+                    fstream file;
+                    file.open(val, ios_base::out | ios_base::in);
+
+                    if (file.is_open()) Error("output file exists: " + val + "\n");
+
+                    file.open(val, ios_base::out);
+
+                    if (file.is_open()) cout << "Writing " + val +"\n";
+
+                    UINT32 pos = value.find('\0') + 1;
+                    file << value.substr(pos);
+
+                    file.close();
+                }
+                else
+                {
+                    Error("item \"" + key + "\" not found\n");
+                }
+
             }
         }
     }
@@ -670,7 +766,77 @@ int main(int argc,char *argv[])
             tag->AddItem( new ITEM(key, val,0) );
         }
 
+        const UINT32 num_file_items = SwitchFilePair.ValueNumber();
+
+        // we skip the first entry
+        for (UINT32 i=1; i < num_file_items; i++)
+        {
+            const string& pair =  SwitchFilePair.ValueString(i);
+
+            const UINT32 len = pair.length();
+
+            UINT32 pos_equal_sign;
+            for (pos_equal_sign = 0; pos_equal_sign < len; pos_equal_sign++)
+            {
+                if( pair[pos_equal_sign] == '=' ) break;
+            }
+
+            if (pos_equal_sign >= len )
+            {
+                Error("pair : " + pair + " does not contain a \'=\'\n");
+            }
+
+            string key = pair.substr(0,pos_equal_sign);
+            pos_equal_sign++;
+            string val = pair.substr(pos_equal_sign,len-pos_equal_sign);
+
+            string filename;
+            if (val.length())
+            {
+                fstream file;
+                file.open(val, ios_base::in);
+
+                if (!file.is_open()) Error("could not open file: " + val + "\n");
+
+                istreambuf_iterator<char> begin(file), end;
+
+                filename = val.substr(val.find_last_of("/\\") + 1);
+
+                val = filename;
+                val += '\0';
+                val += string(begin, end);
+
+                file.close();
+            }
+
+            Debug("adding (" + key + "," + filename + " <Binary>)\n");
+
+            tag->AddItem( new ITEM(key, val,2) );
+        }
+
         WriteApeTag(input, tag.get(), filename);
+    }
+    else if (mode == "erase")
+    {
+        if (tag->TagOffset() == 0)
+        {
+            cout << "No valid APE tag found\n";
+        }
+        else
+        {
+            const UINT32 tag_offset = tag->TagOffset() == 0 ?
+                                      tag->FileLength() : tag->TagOffset();
+
+            if (tag_offset < tag->FileLength())
+            {
+                Warning("truncating file from " + decstr(tag->FileLength()) +
+                        " to " + decstr(tag_offset) + "\n");
+                int result = truncate(filename.c_str(), tag_offset);
+                if (result) {
+                    Warning("truncating file failed");
+                }
+            }
+        }
     }
     else
     {
