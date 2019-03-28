@@ -582,73 +582,8 @@ Switch summary:
 }
 
 
-// ========================================================================
-int main(int argc,char *argv[])
-{
-    RegisterImageName(argv[0]);
-    InstallSignalHandlers();
 
-    //    ParseCommandLine
-    for (argc--, argv++; argc > 0;  argc--, argv++)
-    {
-        if (*argv[0] == '-')
-        {
-            SWITCH  *sw = SWITCH::SwitchFind(argv[0]+1);
-            if (sw == 0)
-            {
-                Warning(string("bad option ") + argv[0] + "\n");
-                return Usage();
-            }
-
-            if (sw->Type() == SWITCH_TYPE_BOOL)
-            {
-                sw->ValueAdd("1");
-            }
-            else
-            {
-                ASSERTX( argc > 0);
-                argc--;
-                argv++;
-                sw->ValueAdd(argv[0]);
-            }
-        }
-        else
-        {
-            break;
-        }
-
-    }
-
-    if (!SwitchDebug.ValueBool())
-    {
-        DisableMessage('I');
-        DisableMessage('D');
-        //DisableMessage('W');
-    }
-
-    const string& mode = SwitchMode.ValueString();
-
-    const string filename = SwitchInputFile.ValueString();
-
-    if (filename == "") Error("no input file specified\n");
-
-    const BOOL change_file = (mode == "overwrite" ||  mode == "update");
-
-    fstream input(filename.c_str(),
-                  change_file ? (ios_base::in|ios_base::out) : ios_base::in );
-    if (!input) Error("could not open file\n");
-
-
-    unique_ptr<TAG> tag(ReadAndProcessApeHeader(input));
-
-    if (mode == "read")
-    {
-        if (tag->TagOffset() == 0)
-        {
-            cout << "No valid APE tag found\n";
-        }
-        else
-        {
+void HandleModeRead(TAG* tag) {
             map<string, string> items;
 
             cout << "Found APE tag at offset " + decstr(tag->TagOffset()) + "\n";
@@ -726,15 +661,11 @@ int main(int argc,char *argv[])
                     Error("item \"" + key + "\" not found\n");
                 }
 
-            }
-        }
-    }
-    else if (mode == "update" || mode == "overwrite")
-    {
-        if (mode == "overwrite")
-        {
-            tag->DelAllItems();
-        }
+            }  
+}
+
+
+void HandleModeUpdate(TAG* tag) {
 
         const UINT32 num_items = SwitchPair.ValueNumber();
 
@@ -812,7 +743,87 @@ int main(int argc,char *argv[])
 
             tag->AddItem(new ITEM(key, val, 2));
         }
+}
 
+// ========================================================================
+int main(int argc,char *argv[])
+{
+    RegisterImageName(argv[0]);
+    InstallSignalHandlers();
+
+    //    ParseCommandLine
+    for (argc--, argv++; argc > 0;  argc--, argv++)
+    {
+        if (*argv[0] == '-')
+        {
+            SWITCH  *sw = SWITCH::SwitchFind(argv[0]+1);
+            if (sw == 0)
+            {
+                Warning(string("bad option ") + argv[0] + "\n");
+                return Usage();
+            }
+
+            if (sw->Type() == SWITCH_TYPE_BOOL)
+            {
+                sw->ValueAdd("1");
+            }
+            else
+            {
+                ASSERTX( argc > 0);
+                argc--;
+                argv++;
+                sw->ValueAdd(argv[0]);
+            }
+        }
+        else
+        {
+            break;
+        }
+
+    }
+
+    if (!SwitchDebug.ValueBool())
+    {
+        DisableMessage('I');
+        DisableMessage('D');
+        //DisableMessage('W');
+    }
+
+    const string& mode = SwitchMode.ValueString();
+
+    const string filename = SwitchInputFile.ValueString();
+
+    if (filename == "") Error("no input file specified\n");
+
+    const BOOL change_file = (mode == "overwrite" ||  mode == "update");
+
+    fstream input(filename.c_str(),
+                  change_file ? (ios_base::in|ios_base::out) : ios_base::in );
+    if (!input) Error("could not open file\n");
+
+
+    unique_ptr<TAG> tag(ReadAndProcessApeHeader(input));
+
+    if (mode == "read")
+    {
+        if (tag->TagOffset() == 0)
+        {
+            cout << "No valid APE tag found\n";
+        }
+        else
+        {
+	  HandleModeRead(tag.get());
+        }
+    }
+    else if (mode == "update") 
+    {
+	HandleModeUpdate(tag.get());
+        WriteApeTag(input, tag.get(), filename);
+    }
+    else if (mode == "overwrite")
+    {
+        tag->DelAllItems();
+	HandleModeUpdate(tag.get());
         WriteApeTag(input, tag.get(), filename);
     }
     else if (mode == "erase")
