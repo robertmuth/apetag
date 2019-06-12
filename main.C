@@ -154,7 +154,7 @@ public:
 
 struct ITEM_LESS {
   bool operator()(const ITEM *i1, ITEM *i2) const {
-    return i1->Key() < i2->Key();
+    return i1->Value().length() <= i2->Value().length();
   }
 };
 
