@@ -183,13 +183,20 @@ public:
   }
 
   VOID DelItem(ITEM *item) {
-    ITEM_SET::iterator it = _items.find(item);
-    if (it != _items.end()) {
-      Debug("erasing item with key " + item->Key() + "\n");
-      _items.erase(it);
-    } else {
-      Debug("could not find item with key " + item->Key() + "\n");
+    for (ITEM_SET::const_iterator it = _items.begin(); it != _items.end();
+         ++it) {
+      const ITEM *tagItem = *it;
+
+      if (tagItem->Key() != item->Key()) {
+        continue;
+      } else {
+        Debug("erasing item with key " + item->Key() + "\n");
+        _items.erase(it);
+        return;
+      }
     }
+
+    Debug("could not find item with key " + item->Key() + "\n");
   }
 
   VOID AddItem(ITEM *item) {
