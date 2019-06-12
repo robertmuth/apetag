@@ -13,8 +13,8 @@ test 3
 W: file does not contain ape tag
 Found APE tag at offset 193
 Items:
-"Title" "--title2--"
 "Year" "--year2--"
+"Title" "--title2--"
 W: truncating file from 303 to 281
 Found APE tag at offset 193
 Items:
@@ -27,8 +27,8 @@ test 4
 W: file does not contain ape tag
 Found APE tag at offset 193
 Items:
-"Title" "--title2--"
 "Year" "--year2--"
+"Title" "--title2--"
 W: truncating file from 303 to 281
 Found APE tag at offset 193
 Items:
@@ -38,19 +38,19 @@ test 5
 W: file does not contain ape tag
 Found APE tag at offset 193
 Items:
-"Test.sh" "test.sh" <Binary>
+"Test.sh" <Binary>
 ============================================================
 test 6
 W: file does not contain ape tag
 Found APE tag at offset 193
 Items:
-"NotTest" "COPYING" <Binary>
-"Test.sh" "COPYING" <Binary>
-W: truncating file from 70599 to 1383
+"Test.sh" <Binary>
+"NotTest" <Binary>
+W: truncating file from 70585 to 1374
 Found APE tag at offset 193
 Items:
-"Test.sh" "README.md" <Binary>
-W: truncating file from 1383 to 193
+"Test.sh" <Binary>
+W: truncating file from 1374 to 193
 W: file does not contain ape tag
 No valid APE tag found
 ============================================================
@@ -58,17 +58,17 @@ test 7
 W: file does not contain ape tag
 Found APE tag at offset 193
 Items:
-"NotTest" "COPYING" <Binary>
-"Test.sh" "COPYING" <Binary>
-W: truncating file from 70599 to 1383
+"Test.sh" <Binary>
+"NotTest" <Binary>
+W: truncating file from 70585 to 1374
 Found APE tag at offset 193
 Items:
-"Test.sh" "README.md" <Binary>
+"Test.sh" <Binary>
 ============================================================
 test 8
 W: file does not contain ape tag
 Found APE tag at offset 193
 Items:
 "Test" "File"
-"Test.sh" "test.sh" <Binary>
+"Test.sh" <Binary>
 done
