@@ -183,17 +183,17 @@ public:
   }
 
   VOID DelItem(ITEM *item) {
-    for (ITEM_SET::const_iterator it = _items.begin(); it != _items.end();
-         ++it) {
+    ITEM_SET::const_iterator it = _items.begin();
+    while (it != _items.end()) {
       const ITEM *tagItem = *it;
 
-      if (tagItem->Key() != item->Key()) {
-        continue;
-      } else {
+      if (tagItem->Key() == item->Key()) {
         Debug("erasing item with key " + item->Key() + "\n");
         _items.erase(it);
         return;
       }
+
+      ++it;
     }
 
     Debug("could not find item with key " + item->Key() + "\n");
