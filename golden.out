@@ -44,8 +44,8 @@ test 6
 W: file does not contain ape tag
 Found APE tag at offset 193
 Items:
-"Test.sh" <Binary>
 "NotTest" <Binary>
+"Test.sh" <Binary>
 W: truncating file from 70585 to 1374
 Found APE tag at offset 193
 Items:
@@ -58,8 +58,8 @@ test 7
 W: file does not contain ape tag
 Found APE tag at offset 193
 Items:
-"Test.sh" <Binary>
 "NotTest" <Binary>
+"Test.sh" <Binary>
 W: truncating file from 70585 to 1374
 Found APE tag at offset 193
 Items:
