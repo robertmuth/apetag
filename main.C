@@ -152,13 +152,18 @@ public:
   const UINT32 &Flags() const { return _flags; }
 };
 
-struct ITEM_LESS {
+// Sort by value length. If the value length is the same, sort by item name.
+struct ITEM_ORDERBY {
   bool operator()(const ITEM *i1, ITEM *i2) const {
-    return i1->Value().length() <= i2->Value().length();
+    if (i1->Value().length() == i2->Value().length()) {
+      return i1->Key() < i2->Key();
+    } else {
+      return i1->Value().length() < i2->Value().length();
+    }
   }
 };
 
-typedef set<ITEM *, ITEM_LESS> ITEM_SET;
+typedef set<ITEM *, ITEM_ORDERBY> ITEM_SET;
 
 // ========================================================================
 // Collection of all items associated with a file
