@@ -520,11 +520,7 @@ void HandleModeRead(TAG *tag) {
     items[key] = value;
 
     if (flags == 2) {
-      UINT32 pos = value.find('\0');
-      string filename = value;
-      filename.resize(pos);
-
-      cout << "\"" + key + "\" \"" + filename + "\"" + " <Binary>\n";
+      cout << "\"" + key + "\"" + " <Binary>\n";
     } else {
       cout << "\"" + key + "\" \"" + value + "\"\n";
     }
@@ -627,7 +623,6 @@ void HandleModeUpdate(TAG *tag) {
     pos_equal_sign++;
     string val = pair.substr(pos_equal_sign, len - pos_equal_sign);
 
-    string filename;
     if (val.length()) {
       fstream file;
       file.open(val, ios_base::in);
@@ -637,16 +632,13 @@ void HandleModeUpdate(TAG *tag) {
 
       istreambuf_iterator<char> begin(file), end;
 
-      filename = val.substr(val.find_last_of("/\\") + 1);
-
-      val = filename;
-      val += '\0';
+      val = '\0';
       val += string(begin, end);
 
       file.close();
     }
 
-    Debug("adding (" + key + "," + filename + " <Binary>)\n");
+    Debug("adding (" + key + "," + " <Binary>)\n");
 
     tag->AddItem(new ITEM(key, val, 2));
   }
