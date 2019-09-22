@@ -337,7 +337,7 @@ LOCALFUN TAG *ReadAndProcessApeHeader(fstream &input) {
   Info("file length is " + decstr(file_length) + "\n");
 
   if (file_length < sizeof(APE_HEADER_FOOTER)) {
-    Info("file too short to  contain ape tag\n");
+    Info("file too short to contain ape tag\n");
     return new TAG(file_length, 0, 0);
   }
 
@@ -478,8 +478,8 @@ apetag operates in one of three modes:
 Mode read (default):
     read and dump APE tag if present
     dump an item to a file with the -f option
-        e.g.: -f \"Cover Art (Front)\"=cover.jpg
-    dump item \"Cover Art (Front)\" to file cover.jpg
+        e.g.: -f "Cover Art (front)"=cover.jpg
+    dump item "Cover Art (front)" to file cover.jpg
 
 Mode update:
     change selected key,value pairs
@@ -487,7 +487,7 @@ Mode update:
         e.g.: -p Artist=Nosferaru -p Album=Bite 
     remove item Artist, change item Album to Cool
     tags not listed with the -p or -f option will remain unchanged
-    tags with empty vaalues are removed
+    tags with empty values are removed
 
 Mode overwrite:
     Overwrite all the tags with items specified by the -p or -f options
