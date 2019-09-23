@@ -152,8 +152,10 @@ public:
   const UINT32 &Flags() const { return _flags; }
 };
 
-// Sort by value length. If the value length is the same, sort by item name.
-struct ITEM_ORDERBY {
+// As suggested by the APEv2 tag specification, the tag items are ordered by
+// (value) length. If two values are the same length the items are ordered by
+// key.
+struct ITEM_ORDER {
   bool operator()(const ITEM *i1, ITEM *i2) const {
     if (i1->Value().length() == i2->Value().length()) {
       return i1->Key() < i2->Key();
@@ -163,7 +165,7 @@ struct ITEM_ORDERBY {
   }
 };
 
-typedef set<ITEM *, ITEM_ORDERBY> ITEM_SET;
+typedef set<ITEM *, ITEM_ORDER> ITEM_SET;
 
 // ========================================================================
 // Collection of all items associated with a file
