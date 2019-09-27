@@ -152,13 +152,20 @@ public:
   const UINT32 &Flags() const { return _flags; }
 };
 
-struct ITEM_LESS {
+// As suggested by the APEv2 tag specification, the tag items are ordered by
+// (value) length. If two values are the same length the items are ordered by
+// key.
+struct ITEM_ORDER {
   bool operator()(const ITEM *i1, ITEM *i2) const {
-    return i1->Key() < i2->Key();
+    if (i1->Value().length() == i2->Value().length()) {
+      return i1->Key() < i2->Key();
+    } else {
+      return i1->Value().length() < i2->Value().length();
+    }
   }
 };
 
-typedef set<ITEM *, ITEM_LESS> ITEM_SET;
+typedef set<ITEM *, ITEM_ORDER> ITEM_SET;
 
 // ========================================================================
 // Collection of all items associated with a file
@@ -183,13 +190,20 @@ public:
   }
 
   VOID DelItem(ITEM *item) {
-    ITEM_SET::iterator it = _items.find(item);
-    if (it != _items.end()) {
-      Debug("erasing item with key " + item->Key() + "\n");
-      _items.erase(it);
-    } else {
-      Debug("could not find item with key " + item->Key() + "\n");
+    ITEM_SET::const_iterator it = _items.begin();
+    while (it != _items.end()) {
+      const ITEM *tagItem = *it;
+
+      if (tagItem->Key() == item->Key()) {
+        Debug("erasing item with key " + item->Key() + "\n");
+        _items.erase(it);
+        return;
+      }
+
+      ++it;
     }
+
+    Debug("could not find item with key " + item->Key() + "\n");
   }
 
   VOID AddItem(ITEM *item) {
