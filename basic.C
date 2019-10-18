@@ -458,3 +458,13 @@ GLOBALFUN UINT32 Tokenize(const string &line, string *array, UINT32 n) {
   return count;
 }
 // ========================================================================
+
+GLOBALFUN BOOL CaseCompare(const string &s1, const string &s2) {
+  if (s2.size() != s1.size())
+    return false;
+  for (unsigned int i = 0; i < s1.size(); ++i)
+    if (tolower(s1[i]) != tolower(s2[i]))
+      return false;
+  return true;
+}
+// ========================================================================
