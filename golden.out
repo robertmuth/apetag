@@ -8,6 +8,9 @@ W: file does not contain ape tag
 Found APE tag at offset 193
 Items:
 "Title" "--title--"
+Found APE tag at offset 193
+Items:
+"title" "--title--"
 ============================================================
 test 3
 W: file does not contain ape tag
@@ -71,4 +74,8 @@ Found APE tag at offset 193
 Items:
 "Test" "File"
 "Test.sh" <Binary>
+Found APE tag at offset 193
+Items:
+"test" "File"
+"test.sh" <Binary>
 done

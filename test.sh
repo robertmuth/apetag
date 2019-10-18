@@ -33,6 +33,8 @@ ${APETAG} -i ${MP3_CLONE} -m read
 newtest
 ${APETAG} -i ${MP3_CLONE} -m update -p  "Title=--title--"
 ${APETAG} -i ${MP3_CLONE} -m read
+${APETAG} -i ${MP3_CLONE} -m update -p  "title=--title--"
+${APETAG} -i ${MP3_CLONE} -m read
 
 
 newtest
@@ -54,6 +56,8 @@ ${APETAG} -i ${MP3_CLONE} -m read
 newtest
 ${APETAG} -i ${MP3_CLONE} -m update -f  "Test.sh"=${BIN1}
 ${APETAG} -i ${MP3_CLONE} -m read
+${APETAG} -i ${MP3_CLONE} -m update -f  "test.sh"=${BIN1}
+${APETAG} -i ${MP3_CLONE} -m read
 
 
 newtest
@@ -74,6 +78,8 @@ ${APETAG} -i ${MP3_CLONE} -m read
 
 newtest
 ${APETAG} -i ${MP3_CLONE} -m update -f "Test.sh"=${BIN1} -p "Test"="File"
+${APETAG} -i ${MP3_CLONE} -m read
+${APETAG} -i ${MP3_CLONE} -m update -f "test.sh"=${BIN1} -p "test"="File"
 ${APETAG} -i ${MP3_CLONE} -m read
 
 echo "done"
