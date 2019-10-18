@@ -189,28 +189,42 @@ public:
     _items.clear();
   }
 
-  VOID DelItem(ITEM *item) {
+  // According to the APEv2 tag specification, item keys that differ only by
+  // case are invalid. We replace such similar items instead of adding new
+  // ones.
+
+  // If an item key already exists and its new value is empty, we remove the
+  // existing item.
+  VOID UpdateItem(ITEM *newitem) {
+    const string &newkey = newitem->Key();
+    const string &newvalue = newitem->Value();
+    const UINT32 &newflags = newitem->Flags();
+
     ITEM_SET::const_iterator it = _items.begin();
     while (it != _items.end()) {
-      const ITEM *tagItem = *it;
+      const ITEM *item = *it;
 
-      if (tagItem->Key() == item->Key()) {
-        Debug("erasing item with key " + item->Key() + "\n");
-        _items.erase(it);
-        return;
+      const string &key = item->Key();
+
+      if (CaseCompare(key, newkey)) {
+        if (newvalue.length() == 0) {
+          Debug("erasing item with key " + key + "\n");
+          _items.erase(it);
+          return;
+        } else {
+          Debug("replacing item with key " + key + "\n");
+          _items.erase(it);
+          _items.insert(newitem);
+          return;
+        }
       }
 
       ++it;
     }
 
-    Debug("could not find item with key " + item->Key() + "\n");
-  }
-
-  VOID AddItem(ITEM *item) {
-    DelItem(item);
-    Debug("adding item with key " + item->Key() + " and flags " +
-          hexstr(item->Flags()) + "\n");
-    _items.insert(item);
+    Debug("adding item with key " + newkey + " and flags " +
+          hexstr(newflags) + "\n");
+    _items.insert(newitem);
   }
 
   const ITEM_SET &Items() const { return _items; }
@@ -451,7 +465,7 @@ LOCALFUN TAG *ReadAndProcessApeHeader(fstream &input) {
 
     Info("tag " + decstr(i) + ":  len: " + decstr(l) + "  flags: " + hexstr(f) +
          "  key: " + key + "  value: " + value + "\n");
-    tag->AddItem(new ITEM(key, value, flags));
+    tag->UpdateItem(new ITEM(key, value, flags));
   }
 
   return tag;
@@ -612,7 +626,7 @@ void HandleModeUpdate(TAG *tag) {
 
     Debug("adding (" + key + "," + val + ")\n");
 
-    tag->AddItem(new ITEM(key, val, 0));
+    tag->UpdateItem(new ITEM(key, val, 0));
   }
 
   const UINT32 num_file_items = SwitchFilePair.ValueNumber();
@@ -654,7 +668,7 @@ void HandleModeUpdate(TAG *tag) {
 
     Debug("adding (" + key + "," + " <Binary>)\n");
 
-    tag->AddItem(new ITEM(key, val, 2));
+    tag->UpdateItem(new ITEM(key, val, 2));
   }
 }
 
