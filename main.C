@@ -98,6 +98,11 @@ LOCALFUN string ExtractVersion() {
 #define APE_FLAG_HAVE_HEADER (1 << 31)
 #define APE_FLAG_IS_HEADER (1 << 29)
 
+#define APE_TAG_ITEM_FLAG_TEXT (0 << 0)
+#define APE_TAG_ITEM_FLAG_BINARY (1 << 1)
+#define APE_TAG_ITEM_FLAG_EXTERNAL_RESOURCE (1 << 2)
+#define APE_TAG_ITEM_FLAG_RESERVED (1 << 3)
+
 typedef struct {
   char _magic[8];
   char _version[4];
@@ -547,7 +552,7 @@ void HandleModeRead(TAG *tag) {
 
     items[key] = value;
 
-    if (flags == 2) {
+    if (flags == APE_TAG_ITEM_FLAG_BINARY) {
       cout << "\"" + key + "\"" + " <Binary>\n";
     } else {
       cout << "\"" + key + "\" \"" + value + "\"\n";
@@ -626,7 +631,7 @@ void HandleModeUpdate(TAG *tag) {
 
     Debug("adding (" + key + "," + val + ")\n");
 
-    tag->UpdateItem(new ITEM(key, val, 0));
+    tag->UpdateItem(new ITEM(key, val, APE_TAG_ITEM_FLAG_TEXT));
   }
 
   const UINT32 num_file_items = SwitchFilePair.ValueNumber();
@@ -668,7 +673,7 @@ void HandleModeUpdate(TAG *tag) {
 
     Debug("adding (" + key + "," + " <Binary>)\n");
 
-    tag->UpdateItem(new ITEM(key, val, 2));
+    tag->UpdateItem(new ITEM(key, val, APE_TAG_ITEM_FLAG_BINARY));
   }
 }
 
