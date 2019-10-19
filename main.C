@@ -488,6 +488,11 @@ SWITCH SwitchPair(
     "specify ape tag and value, arguments must have form tag=val, this option "
     "can be used multiple times");
 
+SWITCH SwitchResourcePair(
+    "r", "general", SWITCH_TYPE_STRING, SWITCH_MODE_ACCUMULATE, "$none$",
+    "specify ape tag and value indicating external resource, arguments must "
+    "have form tag=val, this option can be used multiple times");
+
 SWITCH SwitchFilePair(
     "f", "general", SWITCH_TYPE_STRING, SWITCH_MODE_ACCUMULATE, "$none$",
     "specify ape tag and pathname for embedding or extracting data, arguments "
@@ -503,7 +508,7 @@ int Usage() {
   cout << R"STR(
 Web: http://www.muth.org/Robert/Apetag
 
-Usage: apetag -i input-file -m mode  {[-p|-f] tag=value}*
+Usage: apetag -i input-file -m mode  {[-p|-f|-r] tag=value}*
 
 change or create APE tag for file input-file
 
@@ -516,15 +521,15 @@ Mode read (default):
 
 Mode update:
     change selected key,value pairs
-    the pairs are specified with the -p or -f options
-        e.g.: -p Artist=Nosferaru -p Album=Bite
-    remove item Artist, change item Album to Cool
-    tags not listed with the -p or -f option will remain unchanged
+    the pairs are specified with the -p, -f, or -r options
+        e.g.: -p Artist=Nosferaru -p Album=Bite -r Homepage=http://nos.fer/bite
+    update items Artist, Album and Homepage
+    tags not listed with the -p, -f, or -r option will remain unchanged
     tags with empty values are removed
 
 Mode overwrite:
-    Overwrite all the tags with items specified by the -p or -f options
-    tags not listed with the -p or -f option will be removed
+    Overwrite all the tags with items specified by the -p, -f, or -r options
+    tags not listed with the -p, -f, or -r option will be removed
     this mode is also used to create ape tags initially
 
 Mode erase:
@@ -626,6 +631,21 @@ void HandleModeUpdate(TAG *tag) {
     Debug("adding (" + key + "," + val + ")\n");
 
     tag->UpdateItem(new ITEM(key, val, APE_TAG_ITEM_FLAG_TEXT));
+  }
+
+  const UINT32 num_resource_items = SwitchResourcePair.ValueNumber();
+
+  // we skip the first entry
+  for (UINT32 i = 1; i < num_resource_items; i++) {
+    const pair<string, string> pair =
+        ParsedPair(SwitchResourcePair.ValueString(i));
+
+    const string &key = pair.first;
+    const string &val = pair.second;
+
+    Debug("adding (" + key + "," + val + ")\n");
+
+    tag->UpdateItem(new ITEM(key, val, APE_TAG_ITEM_FLAG_EXTERNAL_RESOURCE));
   }
 
   const UINT32 num_file_items = SwitchFilePair.ValueNumber();
