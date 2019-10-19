@@ -537,6 +537,26 @@ Switch summary:
   return -1;
 }
 
+const pair<string, string> ParsedPair (const string &pair) {
+  const UINT32 len = pair.length();
+
+  UINT32 pos_equal_sign;
+  for (pos_equal_sign = 0; pos_equal_sign < len; pos_equal_sign++) {
+    if (pair[pos_equal_sign] == '=')
+      break;
+  }
+
+  if (pos_equal_sign >= len) {
+    Error("pair : " + pair + " does not contain a \'=\'\n");
+  }
+
+  const string key = pair.substr(0, pos_equal_sign);
+  pos_equal_sign++;
+  const string val = pair.substr(pos_equal_sign, len - pos_equal_sign);
+
+  return make_pair(key, val);
+}
+
 void HandleModeRead(TAG *tag) {
   map<string, string> items;
 
@@ -563,23 +583,11 @@ void HandleModeRead(TAG *tag) {
 
   // we skip the first entry
   for (UINT32 i = 1; i < num_file_items; i++) {
-    const string &pair = SwitchFilePair.ValueString(i);
+    const pair<string, string> pair =
+        ParsedPair(SwitchFilePair.ValueString(i));
 
-    const UINT32 len = pair.length();
-
-    UINT32 pos_equal_sign;
-    for (pos_equal_sign = 0; pos_equal_sign < len; pos_equal_sign++) {
-      if (pair[pos_equal_sign] == '=')
-        break;
-    }
-
-    if (pos_equal_sign >= len) {
-      Error("pair : " + pair + " does not contain a \'=\'\n");
-    }
-
-    string key = pair.substr(0, pos_equal_sign);
-    pos_equal_sign++;
-    string val = pair.substr(pos_equal_sign, len - pos_equal_sign);
+    const string &key = pair.first;
+    const string &val = pair.second;
 
     if (items.count(key)) {
       const string &value = items[key];
@@ -606,28 +614,14 @@ void HandleModeRead(TAG *tag) {
 }
 
 void HandleModeUpdate(TAG *tag) {
-
   const UINT32 num_items = SwitchPair.ValueNumber();
 
   // we skip the first entry
   for (UINT32 i = 1; i < num_items; i++) {
-    const string &pair = SwitchPair.ValueString(i);
+    const pair<string, string> pair = ParsedPair(SwitchPair.ValueString(i));
 
-    const UINT32 len = pair.length();
-
-    UINT32 pos_equal_sign;
-    for (pos_equal_sign = 0; pos_equal_sign < len; pos_equal_sign++) {
-      if (pair[pos_equal_sign] == '=')
-        break;
-    }
-
-    if (pos_equal_sign >= len) {
-      Error("pair : " + pair + " does not contain a \'=\'\n");
-    }
-
-    string key = pair.substr(0, pos_equal_sign);
-    pos_equal_sign++;
-    string val = pair.substr(pos_equal_sign, len - pos_equal_sign);
+    const string &key = pair.first;
+    const string &val = pair.second;
 
     Debug("adding (" + key + "," + val + ")\n");
 
@@ -638,23 +632,10 @@ void HandleModeUpdate(TAG *tag) {
 
   // we skip the first entry
   for (UINT32 i = 1; i < num_file_items; i++) {
-    const string &pair = SwitchFilePair.ValueString(i);
+    pair<string, string> pair = ParsedPair(SwitchFilePair.ValueString(i));
 
-    const UINT32 len = pair.length();
-
-    UINT32 pos_equal_sign;
-    for (pos_equal_sign = 0; pos_equal_sign < len; pos_equal_sign++) {
-      if (pair[pos_equal_sign] == '=')
-        break;
-    }
-
-    if (pos_equal_sign >= len) {
-      Error("pair : " + pair + " does not contain a \'=\'\n");
-    }
-
-    string key = pair.substr(0, pos_equal_sign);
-    pos_equal_sign++;
-    string val = pair.substr(pos_equal_sign, len - pos_equal_sign);
+    const string &key = pair.first;
+    string val = pair.second;
 
     if (val.length()) {
       fstream file;
