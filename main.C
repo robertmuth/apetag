@@ -510,14 +510,14 @@ change or create APE tag for file input-file
 apetag operates in one of three modes:
 Mode read (default):
     read and dump APE tag if present
-    dump an item to a file with the -f option
+    extract an item to a file with the -f option
         e.g.: -f "Cover Art (front)"=cover.jpg
-    dump item "Cover Art (front)" to file cover.jpg
+    extract item "Cover Art (front)" to file cover.jpg
 
 Mode update:
     change selected key,value pairs
     the pairs are specified with the -p or -f options
-        e.g.: -p Artist=Nosferaru -p Album=Bite 
+        e.g.: -p Artist=Nosferaru -p Album=Bite
     remove item Artist, change item Album to Cool
     tags not listed with the -p or -f option will remain unchanged
     tags with empty values are removed
