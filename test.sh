@@ -81,9 +81,32 @@ ${APETAG} -i ${MP3_CLONE} -m read
 
 
 newtest
-${APETAG} -i ${MP3_CLONE} -m update -f "Test.sh"=${BIN1} -p "Test"="File"
+${APETAG} -i ${MP3_CLONE} -m update -r  "TestPage=http://bo.gus/addr"
 ${APETAG} -i ${MP3_CLONE} -m read
-${APETAG} -i ${MP3_CLONE} -m update -f "test.sh"=${BIN1} -p "test"="File"
+${APETAG} -i ${MP3_CLONE} -m update -r  "testpage=http://bo.gus/addr"
+${APETAG} -i ${MP3_CLONE} -m read
+
+
+newtest
+${APETAG} -i ${MP3_CLONE} -m update -r "TestPage=http://bo.gus/website/page.html" -r "ExternalCover=/dev/zero"
+${APETAG} -i ${MP3_CLONE} -m read
+${APETAG} -i ${MP3_CLONE} -m update -r "TestPage=http://bo.gus/addr/testpage.html" -r "ExternalCover="
+${APETAG} -i ${MP3_CLONE} -m read
+${APETAG} -i ${MP3_CLONE} -m erase
+${APETAG} -i ${MP3_CLONE} -m read
+
+
+newtest
+${APETAG} -i ${MP3_CLONE} -m update -r "TestPage=http://bo.gus/website/page.html" -r "ExternalCover=/dev/zero"
+${APETAG} -i ${MP3_CLONE} -m read
+${APETAG} -i ${MP3_CLONE} -m overwrite -r "TestPage=http://bo.gus/addr/testpage.html"
+${APETAG} -i ${MP3_CLONE} -m read
+
+
+newtest
+${APETAG} -i ${MP3_CLONE} -m update -f "Test.sh"=${BIN1} -p "Test"="File" -r "ExternalCover"="/dev/zero"
+${APETAG} -i ${MP3_CLONE} -m read
+${APETAG} -i ${MP3_CLONE} -m update -f "test.sh"=${BIN1} -p "test"="File" -r "externalcover"="/dev/zero"
 ${APETAG} -i ${MP3_CLONE} -m read
 
 echo "done"

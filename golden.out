@@ -42,6 +42,9 @@ W: file does not contain ape tag
 Found APE tag at offset 193
 Items:
 "Test.sh" <Binary>
+Found APE tag at offset 193
+Items:
+"test.sh" <Binary>
 ============================================================
 test 6
 W: file does not contain ape tag
@@ -72,10 +75,46 @@ test 8
 W: file does not contain ape tag
 Found APE tag at offset 193
 Items:
+"TestPage" "http://bo.gus/addr"
+Found APE tag at offset 193
+Items:
+"testpage" "http://bo.gus/addr"
+============================================================
+test 9
+W: file does not contain ape tag
+Found APE tag at offset 193
+Items:
+"ExternalCover" "/dev/zero"
+"TestPage" "http://bo.gus/website/page.html"
+W: truncating file from 336 to 306
+Found APE tag at offset 193
+Items:
+"TestPage" "http://bo.gus/addr/testpage.html"
+W: truncating file from 306 to 193
+W: file does not contain ape tag
+No valid APE tag found
+============================================================
+test 10
+W: file does not contain ape tag
+Found APE tag at offset 193
+Items:
+"ExternalCover" "/dev/zero"
+"TestPage" "http://bo.gus/website/page.html"
+W: truncating file from 336 to 306
+Found APE tag at offset 193
+Items:
+"TestPage" "http://bo.gus/addr/testpage.html"
+============================================================
+test 11
+W: file does not contain ape tag
+Found APE tag at offset 193
+Items:
 "Test" "File"
+"ExternalCover" "/dev/zero"
 "Test.sh" <Binary>
 Found APE tag at offset 193
 Items:
 "test" "File"
+"externalcover" "/dev/zero"
 "test.sh" <Binary>
 done
