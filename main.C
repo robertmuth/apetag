@@ -483,15 +483,15 @@ SWITCH SwitchInputFile("i", " general", SWITCH_TYPE_STRING,
 SWITCH SwitchDebug("debug", "general", SWITCH_TYPE_BOOL, SWITCH_MODE_OVERWRITE,
                    "0", "enable debug mode");
 
-SWITCH
-SwitchPair("p", "general", SWITCH_TYPE_STRING, SWITCH_MODE_ACCUMULATE, "$none$",
-           "specify ape tag and value, arguments must have form tag=val, "
-           "this option can be used multiple times");
+SWITCH SwitchPair(
+    "p", "general", SWITCH_TYPE_STRING, SWITCH_MODE_ACCUMULATE, "$none$",
+    "specify ape tag and value, arguments must have form tag=val, this option "
+    "can be used multiple times");
 
 SWITCH SwitchFilePair(
     "f", "general", SWITCH_TYPE_STRING, SWITCH_MODE_ACCUMULATE, "$none$",
-    "specify ape tag and file pathname, arguments must have form "
-    "tag=pathname, this option can be used multiple times");
+    "specify ape tag and pathname for embedding or extracting data, arguments "
+    "must have form tag=pathname, this option can be used multiple times");
 
 SWITCH SwitchMode("m", "general", SWITCH_TYPE_STRING, SWITCH_MODE_OVERWRITE,
                   "read", "specify mode (read, update, overwrite, or erase)");
