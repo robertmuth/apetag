@@ -577,11 +577,16 @@ void HandleModeRead(TAG *tag) {
 
     items[key] = value;
 
-    if (flags == APE_TAG_ITEM_FLAG_BINARY) {
-      cout << "\"" + key + "\"" + " <Binary>\n";
-    } else {
-      cout << "\"" + key + "\" \"" + value + "\"\n";
+    string dumpitem;
+    if ((flags & APE_TAG_ITEM_FLAG_EXTERNAL_RESOURCE) == APE_TAG_ITEM_FLAG_EXTERNAL_RESOURCE) {
+        dumpitem = "ERS \"" + key + "\" \"" + value + "\"";
+    } else if ((flags & APE_TAG_ITEM_FLAG_BINARY) == APE_TAG_ITEM_FLAG_BINARY) {
+        dumpitem = "BIN \"" + key + "\"";
+    } else if ((flags & APE_TAG_ITEM_FLAG_TEXT) == APE_TAG_ITEM_FLAG_TEXT) {
+        dumpitem = "TXT \"" + key + "\" \"" + value + "\"";
     }
+
+    cout << dumpitem + "\n";
   }
 
   const UINT32 num_file_items = SwitchFilePair.ValueNumber();
