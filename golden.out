@@ -7,21 +7,21 @@ test 2
 W: file does not contain ape tag
 Found APE tag at offset 193
 Items:
-"Title" "--title--"
+TXT "Title" "--title--"
 Found APE tag at offset 193
 Items:
-"title" "--title--"
+TXT "title" "--title--"
 ============================================================
 test 3
 W: file does not contain ape tag
 Found APE tag at offset 193
 Items:
-"Year" "--year2--"
-"Title" "--title2--"
+TXT "Year" "--year2--"
+TXT "Title" "--title2--"
 W: truncating file from 303 to 281
 Found APE tag at offset 193
 Items:
-"Title" "--title3--"
+TXT "Title" "--title3--"
 W: truncating file from 281 to 193
 W: file does not contain ape tag
 No valid APE tag found
@@ -30,32 +30,32 @@ test 4
 W: file does not contain ape tag
 Found APE tag at offset 193
 Items:
-"Year" "--year2--"
-"Title" "--title2--"
+TXT "Year" "--year2--"
+TXT "Title" "--title2--"
 W: truncating file from 303 to 281
 Found APE tag at offset 193
 Items:
-"Title" "--title3--"
+TXT "Title" "--title3--"
 ============================================================
 test 5
 W: file does not contain ape tag
 Found APE tag at offset 193
 Items:
-"Test.sh" <Binary>
+BIN "Test.sh"
 Found APE tag at offset 193
 Items:
-"test.sh" <Binary>
+BIN "test.sh"
 ============================================================
 test 6
 W: file does not contain ape tag
 Found APE tag at offset 193
 Items:
-"NotTest" <Binary>
-"Test.sh" <Binary>
+BIN "NotTest"
+BIN "Test.sh"
 W: truncating file from 70585 to 1374
 Found APE tag at offset 193
 Items:
-"Test.sh" <Binary>
+BIN "Test.sh"
 W: truncating file from 1374 to 193
 W: file does not contain ape tag
 No valid APE tag found
@@ -64,32 +64,32 @@ test 7
 W: file does not contain ape tag
 Found APE tag at offset 193
 Items:
-"NotTest" <Binary>
-"Test.sh" <Binary>
+BIN "NotTest"
+BIN "Test.sh"
 W: truncating file from 70585 to 1374
 Found APE tag at offset 193
 Items:
-"Test.sh" <Binary>
+BIN "Test.sh"
 ============================================================
 test 8
 W: file does not contain ape tag
 Found APE tag at offset 193
 Items:
-"TestPage" "http://bo.gus/addr"
+ERS "TestPage" "http://bo.gus/addr"
 Found APE tag at offset 193
 Items:
-"testpage" "http://bo.gus/addr"
+ERS "testpage" "http://bo.gus/addr"
 ============================================================
 test 9
 W: file does not contain ape tag
 Found APE tag at offset 193
 Items:
-"ExternalCover" "/dev/zero"
-"TestPage" "http://bo.gus/website/page.html"
+ERS "ExternalCover" "/dev/zero"
+ERS "TestPage" "http://bo.gus/website/page.html"
 W: truncating file from 336 to 306
 Found APE tag at offset 193
 Items:
-"TestPage" "http://bo.gus/addr/testpage.html"
+ERS "TestPage" "http://bo.gus/addr/testpage.html"
 W: truncating file from 306 to 193
 W: file does not contain ape tag
 No valid APE tag found
@@ -98,23 +98,23 @@ test 10
 W: file does not contain ape tag
 Found APE tag at offset 193
 Items:
-"ExternalCover" "/dev/zero"
-"TestPage" "http://bo.gus/website/page.html"
+ERS "ExternalCover" "/dev/zero"
+ERS "TestPage" "http://bo.gus/website/page.html"
 W: truncating file from 336 to 306
 Found APE tag at offset 193
 Items:
-"TestPage" "http://bo.gus/addr/testpage.html"
+ERS "TestPage" "http://bo.gus/addr/testpage.html"
 ============================================================
 test 11
 W: file does not contain ape tag
 Found APE tag at offset 193
 Items:
-"Test" "File"
-"ExternalCover" "/dev/zero"
-"Test.sh" <Binary>
+TXT "Test" "File"
+ERS "ExternalCover" "/dev/zero"
+BIN "Test.sh"
 Found APE tag at offset 193
 Items:
-"test" "File"
-"externalcover" "/dev/zero"
-"test.sh" <Binary>
+TXT "test" "File"
+ERS "externalcover" "/dev/zero"
+BIN "test.sh"
 done
