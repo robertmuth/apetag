@@ -98,6 +98,9 @@ LOCALFUN string ExtractVersion() {
 #define APE_FLAG_HAVE_HEADER (1 << 31)
 #define APE_FLAG_IS_HEADER (1 << 29)
 
+#define APE_FLAG_READWRITE (0 << 0)
+#define APE_FLAG_READONLY (1 << 0)
+
 #define APE_TAG_ITEM_FLAG_TEXT (0 << 0)
 #define APE_TAG_ITEM_FLAG_BINARY (1 << 1)
 #define APE_TAG_ITEM_FLAG_EXTERNAL_RESOURCE (1 << 2)
