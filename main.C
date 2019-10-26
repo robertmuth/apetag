@@ -164,7 +164,7 @@ public:
 // (value) length. If two values are the same length the items are ordered by
 // key.
 struct ITEM_ORDER {
-  bool operator()(const ITEM *i1, ITEM *i2) const {
+  bool operator()(const ITEM *i1, const ITEM *i2) const {
     if (i1->Value().length() == i2->Value().length()) {
       return i1->Key() < i2->Key();
     } else {
@@ -173,7 +173,7 @@ struct ITEM_ORDER {
   }
 };
 
-typedef set<ITEM *, ITEM_ORDER> ITEM_SET;
+typedef set<const ITEM *, ITEM_ORDER> ITEM_SET;
 
 // ========================================================================
 // Collection of all items associated with a file
@@ -203,36 +203,48 @@ public:
 
   // If an item key already exists and its new value is empty, we remove the
   // existing item.
-  VOID UpdateItem(ITEM *newitem) {
+  VOID UpdateItem(const ITEM *newitem) {
     const string &newkey = newitem->Key();
     const string &newvalue = newitem->Value();
     const UINT32 &newflags = newitem->Flags();
 
+    const ITEM *item = FindItem(newkey);
+
+    if (item->Key().size()) {
+      const string &key = item->Key();
+
+      if (newvalue.length() == 0) {
+        Debug("erasing item with key " + key + "\n");
+        _items.erase(item);
+        return;
+      } else {
+        Debug("replacing item with key " + key + "\n");
+        _items.erase(item);
+        _items.insert(newitem);
+        return;
+      }
+    }
+
+    Debug("adding item with key " + newkey + " and flags " +
+          hexstr(newflags) + "\n");
+    _items.insert(newitem);
+  }
+
+  const ITEM *FindItem(const string &findkey) const {
     ITEM_SET::const_iterator it = _items.begin();
     while (it != _items.end()) {
       const ITEM *item = *it;
 
       const string &key = item->Key();
 
-      if (CaseCompare(key, newkey)) {
-        if (newvalue.length() == 0) {
-          Debug("erasing item with key " + key + "\n");
-          _items.erase(it);
-          return;
-        } else {
-          Debug("replacing item with key " + key + "\n");
-          _items.erase(it);
-          _items.insert(newitem);
-          return;
-        }
+      if (CaseCompare(key, findkey)) {
+        return item;
       }
 
       ++it;
     }
 
-    Debug("adding item with key " + newkey + " and flags " +
-          hexstr(newflags) + "\n");
-    _items.insert(newitem);
+    return new ITEM();
   }
 
   const ITEM_SET &Items() const { return _items; }
