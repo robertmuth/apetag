@@ -194,7 +194,27 @@ public:
 
   VOID DelAllItems() {
     Debug("erasing all items\n");
+
+    ITEM_SET items;
+
+    ITEM_SET::const_iterator it = _items.begin();
+    while (it != _items.end()) {
+      const ITEM *item = *it;
+
+      const string &key = item->Key();
+      const UINT32 &flags = item->Flags();
+
+      if ((flags & APE_FLAG_READONLY) == APE_FLAG_READONLY) {
+        Warning("read only item with key " + key + " was not " +
+                "erased\n");
+        items.insert(item);
+      }
+
+      ++it;
+    }
+
     _items.clear();
+    _items = items;
   }
 
   // According to the APEv2 tag specification, item keys that differ only by
@@ -203,7 +223,7 @@ public:
 
   // If an item key already exists and its new value is empty, we remove the
   // existing item.
-  VOID UpdateItem(const ITEM *newitem) {
+  VOID UpdateItem(const ITEM *newitem, const BOOL &force = false) {
     const string &newkey = newitem->Key();
     const string &newvalue = newitem->Value();
     const UINT32 &newflags = newitem->Flags();
@@ -212,6 +232,13 @@ public:
 
     if (item->Key().size()) {
       const string &key = item->Key();
+      const UINT32 &flags = item->Flags();
+
+      if (((flags & APE_FLAG_READONLY) == APE_FLAG_READONLY) && !force) {
+        Warning("read only item with key " + key + " was not " +
+                "modified\n");
+        return;
+      }
 
       if (newvalue.length() == 0) {
         Debug("erasing item with key " + key + "\n");
@@ -516,6 +543,12 @@ SWITCH SwitchFilePair(
 SWITCH SwitchMode("m", "general", SWITCH_TYPE_STRING, SWITCH_MODE_OVERWRITE,
                   "read", "specify mode (read, update, overwrite, or erase)");
 
+SWITCH SwitchRo("ro", "general", SWITCH_TYPE_STRING, SWITCH_MODE_ACCUMULATE,
+                  "$none$", "specify ape tag to set read only");
+
+SWITCH SwitchRw("rw", "general", SWITCH_TYPE_STRING, SWITCH_MODE_ACCUMULATE,
+                  "$none$", "specify ape tag to set read write");
+
 // ========================================================================
 int Usage() {
   cout << "APETAG version: " << ExtractVersion()
@@ -524,6 +557,7 @@ int Usage() {
 Web: http://www.muth.org/Robert/Apetag
 
 Usage: apetag -i input-file -m mode  {[-p|-f|-r] tag=value}*
+Or: apetag -i input-file -m {update} {[-rw|-ro] tag}
 
 change or create APE tag for file input-file
 
@@ -541,10 +575,12 @@ Mode update:
     update items Artist, Album and Homepage
     tags not listed with the -p, -f, or -r option will remain unchanged
     tags with empty values are removed
+    tags set read only will remain unchanged
 
 Mode overwrite:
     Overwrite all the tags with items specified by the -p, -f, or -r options
     tags not listed with the -p, -f, or -r option will be removed
+    tags set read only will remain unchanged
     this mode is also used to create ape tags initially
 
 Mode erase:
@@ -599,6 +635,12 @@ void HandleModeRead(TAG *tag) {
         dumpitem = "BIN \"" + key + "\"";
     } else if ((flags & APE_TAG_ITEM_FLAG_TEXT) == APE_TAG_ITEM_FLAG_TEXT) {
         dumpitem = "TXT \"" + key + "\" \"" + value + "\"";
+    }
+
+    if ((~flags & APE_FLAG_READONLY) == APE_FLAG_READONLY) {
+      dumpitem += " RW";
+    } else {
+      dumpitem += " RO";
     }
 
     cout << dumpitem + "\n";
@@ -695,6 +737,42 @@ void HandleModeUpdate(TAG *tag) {
     Debug("adding (" + key + "," + " <Binary>)\n");
 
     tag->UpdateItem(new ITEM(key, val, APE_TAG_ITEM_FLAG_BINARY));
+  }
+
+  const UINT32 num_rw_items = SwitchRw.ValueNumber();
+
+  // we skip the first entry
+  for (UINT32 i = 1; i < num_rw_items; i++) {
+    const string &key = SwitchRw.ValueString(i);
+
+    Debug("setting (" + key + ") read write\n");
+
+    const ITEM *item = tag->FindItem(key);
+    if (item->Value().size()) {
+      UINT32 flags = item->Flags();
+      flags &= ~APE_FLAG_READONLY;
+      tag->UpdateItem(new ITEM(item->Key(), item->Value(), flags), true);
+    } else {
+      Warning("item \"" + key + "\" not found\n");
+    }
+  }
+
+  const UINT32 num_ro_items = SwitchRo.ValueNumber();
+
+  // we skip the first entry
+  for (UINT32 i = 1; i < num_ro_items; i++) {
+    const string &key = SwitchRo.ValueString(i);
+
+    Debug("setting (" + key + ") read only\n");
+
+    const ITEM *item = tag->FindItem(key);
+    if (item->Value().size()) {
+      UINT32 flags = item->Flags();
+      flags |= APE_FLAG_READONLY;
+      tag->UpdateItem(new ITEM(item->Key(), item->Value(), flags));
+    } else {
+      Warning("item \"" + key + "\" not found\n");
+    }
   }
 }
 
