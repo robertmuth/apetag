@@ -184,11 +184,12 @@ private:
   UINT32 _tag_offset;
   UINT32 _num_items;
   ITEM_SET _items;
+  UINT32 _flags;
 
 public:
-  TAG(UINT32 file_length, UINT32 tag_offset, UINT32 num_items)
+  TAG(UINT32 file_length, UINT32 tag_offset, UINT32 num_items, UINT32 flags)
       : _file_length(file_length), _tag_offset(tag_offset),
-        _num_items(num_items) {
+        _num_items(num_items), _flags(flags) {
     Debug("num items: " + hexstr(_num_items) + "\n");
   }
 
@@ -307,13 +308,23 @@ public:
     }
     return count;
   }
+
+  VOID SetFlags(const UINT32 &flags) {
+     Debug("setting tag with flags " + hexstr(flags) + "\n");
+    _flags = flags;
+  }
+
+  UINT32 Flags() const {
+    return _flags;
+  }
 };
 
 LOCALFUN VOID WriteApeHeaderFooter(fstream &input, const TAG *tag,
                                    UINT32 flags) {
   char buf[4];
 
-  Info("writing header/footer at " + decstr(int(input.tellp())) + "\n");
+  Info("writing header/footer at " + decstr(int(input.tellp())) + " flags: " +
+       hexstr(flags) + "\n");
 
   if (sizeof(APE_HEADER_FOOTER) != 32)
     Error("bad size");
@@ -387,9 +398,9 @@ LOCALFUN VOID WriteApeTag(fstream &input, const TAG *tag,
             " target pos " + decstr(tag_offset) + "\n");
   }
 
-  WriteApeHeaderFooter(input, tag, APE_FLAG_IS_HEADER | APE_FLAG_HAVE_HEADER);
+  WriteApeHeaderFooter(input, tag, tag->Flags() | APE_FLAG_IS_HEADER | APE_FLAG_HAVE_HEADER);
   WriteApeItems(input, tag);
-  WriteApeHeaderFooter(input, tag, APE_FLAG_HAVE_HEADER);
+  WriteApeHeaderFooter(input, tag, tag->Flags() | APE_FLAG_HAVE_HEADER);
 
   UINT32 pos = input.tellp();
 
@@ -413,7 +424,7 @@ LOCALFUN TAG *ReadAndProcessApeHeader(fstream &input) {
 
   if (file_length < sizeof(APE_HEADER_FOOTER)) {
     Info("file too short to contain ape tag\n");
-    return new TAG(file_length, 0, 0);
+    return new TAG(file_length, 0, 0, 0);
   }
 
   // read footer
@@ -426,7 +437,7 @@ LOCALFUN TAG *ReadAndProcessApeHeader(fstream &input) {
 
   if (magic != APE_MAGIC) {
     Warning("file does not contain ape tag\n");
-    return new TAG(file_length, 0, 0);
+    return new TAG(file_length, 0, 0, 0);
   }
 
   const UINT32 version = ReadLittleEndianUint32(ape._version);
@@ -444,11 +455,13 @@ LOCALFUN TAG *ReadAndProcessApeHeader(fstream &input) {
 
   if (file_length < length) {
     Warning("tag bigger than file\n");
-    return new TAG(file_length, 0, 0);
+    return new TAG(file_length, 0, 0, 0);
   }
 
   // read header if any
   BOOL have_header = 0;
+
+  UINT32 tagflags = 0;
 
   if (file_length >= length + sizeof(APE_HEADER_FOOTER)) {
     input.seekg(-(INT32)(length + sizeof(APE_HEADER_FOOTER)), ios::end);
@@ -465,6 +478,10 @@ LOCALFUN TAG *ReadAndProcessApeHeader(fstream &input) {
       const UINT32 items2 = ReadLittleEndianUint32(ape2._items);
       const UINT32 flags2 = ReadLittleEndianUint32(ape2._flags);
 
+      tagflags = flags2;
+      tagflags &= ~APE_FLAG_HAVE_HEADER;
+      tagflags &= ~APE_FLAG_IS_HEADER;
+
       if (version != version2 || length != length2 || items != items2) {
         Warning("header footer data mismatch\n");
       }
@@ -477,7 +494,7 @@ LOCALFUN TAG *ReadAndProcessApeHeader(fstream &input) {
 
   TAG *tag = new TAG(
       file_length,
-      file_length - length - have_header * sizeof(APE_HEADER_FOOTER), items);
+      file_length - length - have_header * sizeof(APE_HEADER_FOOTER), items, tagflags);
 
   // read and process tag data
 
@@ -541,7 +558,8 @@ SWITCH SwitchFilePair(
     "must have form tag=pathname, this option can be used multiple times");
 
 SWITCH SwitchMode("m", "general", SWITCH_TYPE_STRING, SWITCH_MODE_OVERWRITE,
-                  "read", "specify mode (read, update, overwrite, or erase)");
+                  "read", "specify mode (read, update, overwrite, erase or "
+                  "setro/setrw)");
 
 SWITCH SwitchRo("ro", "general", SWITCH_TYPE_STRING, SWITCH_MODE_ACCUMULATE,
                   "$none$", "specify ape tag to set read only");
@@ -586,6 +604,11 @@ Mode overwrite:
 Mode erase:
     Remove the APE tag from file input-file
 
+Mode setro|setrw:
+    Set the APE tag read only or read write
+        e.g.: setro
+    set the ape tag read only
+
 Switch summary:
 
 )STR";
@@ -617,6 +640,9 @@ void HandleModeRead(TAG *tag) {
   map<string, string> items;
 
   cout << "Found APE tag at offset " + decstr(tag->TagOffset()) + "\n";
+  if ((tag->Flags() & APE_FLAG_READONLY) == APE_FLAG_READONLY) {
+    cout << "TAG IS SET READ ONLY\n";
+  }
   cout << "Items:\n";
   for (ITEM_SET::const_iterator it = tag->Items().begin();
        it != tag->Items().end(); ++it) {
@@ -776,6 +802,22 @@ void HandleModeUpdate(TAG *tag) {
   }
 }
 
+void HandleRoRw(TAG *tag, const BOOL &ro) {
+  if (ro) {
+    Debug("setting tag read only\n");
+
+    UINT32 flags = tag->Flags();
+    flags |= APE_FLAG_READONLY;
+    tag->SetFlags(flags);
+  } else {
+    Debug("setting tag read write\n");
+
+    UINT32 flags = tag->Flags();
+    flags &= ~APE_FLAG_READONLY;
+    tag->SetFlags(flags);
+  }
+}
+
 // ========================================================================
 int main(int argc, char *argv[]) {
   RegisterImageName(argv[0]);
@@ -816,7 +858,8 @@ int main(int argc, char *argv[]) {
   if (filename == "")
     Error("no input file specified\n");
 
-  const BOOL change_file = (mode == "overwrite" || mode == "update");
+  const BOOL change_file = (mode == "overwrite" || mode == "update"
+                            || mode == "setro" || mode == "setrw");
 
   fstream input(filename.c_str(),
                 change_file ? (ios_base::in | ios_base::out) : ios_base::in);
@@ -832,12 +875,20 @@ int main(int argc, char *argv[]) {
       HandleModeRead(tag.get());
     }
   } else if (mode == "update") {
-    HandleModeUpdate(tag.get());
-    WriteApeTag(input, tag.get(), filename);
+    if ((tag->Flags() & APE_FLAG_READONLY) == APE_FLAG_READONLY) {
+      Error("tag is read only\n");
+    } else {
+      HandleModeUpdate(tag.get());
+      WriteApeTag(input, tag.get(), filename);
+    }
   } else if (mode == "overwrite") {
-    tag->DelAllItems();
-    HandleModeUpdate(tag.get());
-    WriteApeTag(input, tag.get(), filename);
+    if ((tag->Flags() & APE_FLAG_READONLY) == APE_FLAG_READONLY) {
+      Error("tag is read only\n");
+    } else {
+      tag->DelAllItems();
+      HandleModeUpdate(tag.get());
+      WriteApeTag(input, tag.get(), filename);
+    }
   } else if (mode == "erase") {
     if (tag->TagOffset() == 0) {
       cout << "No valid APE tag found\n";
@@ -853,6 +904,13 @@ int main(int argc, char *argv[]) {
           Warning("truncating file failed");
         }
       }
+    }
+  } else if (mode == "setro" || mode == "setrw") {
+    if (tag->TagOffset() == 0) {
+      cout << "No valid APE tag found\n";
+    } else {
+      HandleRoRw(tag.get(), (mode == "setro"));
+      WriteApeTag(input, tag.get(), filename);
     }
   } else {
     Error("unknown mode\n");
