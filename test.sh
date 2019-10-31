@@ -169,4 +169,12 @@ ${APETAG} -i ${MP3_CLONE} -m read
 ${APETAG} -i ${MP3_CLONE} -m update -f "test.sh"=${BIN2} -p "test"="FILE2" -r "externalcover"="/DEV/ZERO"
 ${APETAG} -i ${MP3_CLONE} -m read
 
+newtest
+${APETAG} -i ${MP3_CLONE} -m update -f "test.sh"=${BIN1} -p Title="--title2--" -r "testpage"="http://bo.gus/website/page.html"
+${APETAG} -i ${MP3_CLONE} -m setro
+${APETAG} -i ${MP3_CLONE} -m read
+${APETAG} -i ${MP3_CLONE} -m setrw
+${APETAG} -i ${MP3_CLONE} -m read
+
+
 echo "done"
