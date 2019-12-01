@@ -567,6 +567,9 @@ SWITCH SwitchRo("ro", "general", SWITCH_TYPE_STRING, SWITCH_MODE_ACCUMULATE,
 SWITCH SwitchRw("rw", "general", SWITCH_TYPE_STRING, SWITCH_MODE_ACCUMULATE,
                   "$none$", "specify ape tag to set read write");
 
+SWITCH SwitchFile("file", "general", SWITCH_TYPE_STRING, SWITCH_MODE_OVERWRITE,
+                  "", "specify pathname for tagfile");
+
 // ========================================================================
 int Usage() {
   cout << "APETAG version: " << ExtractVersion()
@@ -576,6 +579,7 @@ Web: http://www.muth.org/Robert/Apetag
 
 Usage: apetag -i input-file -m mode  {[-p|-f|-r] tag=value}*
 Or: apetag -i input-file -m {update} {[-rw|-ro] tag}
+Or: apetag -i input-file -m {[read|overwrite]} {-file tagfile}
 
 change or create APE tag for file input-file
 
@@ -585,6 +589,8 @@ Mode read (default):
     extract an item to a file with the -f option
         e.g.: -f "Cover Art (front)"=cover.jpg
     extract item "Cover Art (front)" to file cover.jpg
+    dump the APE tag to a file with the -file option
+    e.g.: -file tagdump.apetag
 
 Mode update:
     change selected key,value pairs
@@ -598,6 +604,7 @@ Mode update:
 Mode overwrite:
     Overwrite all the tags with items specified by the -p, -f, or -r options
     tags not listed with the -p, -f, or -r option will be removed
+    replace the tags with items from an ape-tagged file with the -file option
     tags set read only will remain unchanged
     this mode is also used to create ape tags initially
 
@@ -818,6 +825,47 @@ void HandleRoRw(TAG *tag, const BOOL &ro) {
   }
 }
 
+void HandleTagImport (fstream &input, TAG *tag, const string &filename) {
+  const string &infile = SwitchFile.ValueString();
+  fstream in(infile.c_str(), ios_base::in);
+
+  if (!in)
+    Error("could not open file\n");
+
+  TAG *intag = ReadAndProcessApeHeader(in);
+
+  TAG *offsettag = new TAG(tag->FileLength(), tag->TagOffset(),
+                           intag->ItemCount(), intag->Flags());
+
+  ITEM_SET::const_iterator it = intag->Items().begin();
+  while (it != intag->Items().end()) {
+    offsettag->UpdateItem(*it);
+    ++it;
+  }
+
+  WriteApeTag(input, offsettag, filename);
+}
+
+void HandleTagExport (TAG *tag) {
+  const string &outfile = SwitchFile.ValueString();
+
+  if (ifstream(outfile.c_str()).good()) {
+    Error("output file exists: " + outfile + "\n");
+  }
+
+  TAG *outtag = new TAG(0, 0, tag->ItemCount(), tag->Flags());
+
+  ITEM_SET::const_iterator it = tag->Items().begin();
+  while (it != tag->Items().end()) {
+    outtag->UpdateItem(*it);
+    ++it;
+  }
+
+  fstream of(outfile.c_str(), ios_base::out);
+
+  WriteApeTag(of, outtag, outfile);
+}
+
 // ========================================================================
 int main(int argc, char *argv[]) {
   RegisterImageName(argv[0]);
@@ -872,7 +920,11 @@ int main(int argc, char *argv[]) {
     if (tag->TagOffset() == 0) {
       cout << "No valid APE tag found\n";
     } else {
-      HandleModeRead(tag.get());
+      if (SwitchFile.ValueString().size()) {
+        HandleTagExport(tag.get());
+      } else {
+        HandleModeRead(tag.get());
+      }
     }
   } else if (mode == "update") {
     if ((tag->Flags() & APE_FLAG_READONLY) == APE_FLAG_READONLY) {
@@ -885,9 +937,13 @@ int main(int argc, char *argv[]) {
     if ((tag->Flags() & APE_FLAG_READONLY) == APE_FLAG_READONLY) {
       Error("tag is read only\n");
     } else {
-      tag->DelAllItems();
-      HandleModeUpdate(tag.get());
-      WriteApeTag(input, tag.get(), filename);
+      if (SwitchFile.ValueString().size()) {
+        HandleTagImport(input, tag.get(), filename);
+      } else {
+        tag->DelAllItems();
+        HandleModeUpdate(tag.get());
+        WriteApeTag(input, tag.get(), filename);
+      }
     }
   } else if (mode == "erase") {
     if (tag->TagOffset() == 0) {
