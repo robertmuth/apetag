@@ -13,8 +13,12 @@ readonly BIN3=./README.md
 
 COUNTER=0
 
-clone() {
+cleanup() {
     rm -f ${MP3_CLONE}
+}
+trap cleanup EXIT
+
+clone() {
     cp ${MP3} ${MP3_CLONE}
 }
 
