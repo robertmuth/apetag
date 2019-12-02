@@ -98,6 +98,11 @@ LOCALFUN string ExtractVersion() {
 #define APE_FLAG_HAVE_HEADER (1 << 31)
 #define APE_FLAG_IS_HEADER (1 << 29)
 
+#define APE_TAG_ITEM_FLAG_TEXT (0 << 0)
+#define APE_TAG_ITEM_FLAG_BINARY (1 << 1)
+#define APE_TAG_ITEM_FLAG_EXTERNAL_RESOURCE (1 << 2)
+#define APE_TAG_ITEM_FLAG_RESERVED (1 << 3)
+
 typedef struct {
   char _magic[8];
   char _version[4];
@@ -478,15 +483,15 @@ SWITCH SwitchInputFile("i", " general", SWITCH_TYPE_STRING,
 SWITCH SwitchDebug("debug", "general", SWITCH_TYPE_BOOL, SWITCH_MODE_OVERWRITE,
                    "0", "enable debug mode");
 
-SWITCH
-SwitchPair("p", "general", SWITCH_TYPE_STRING, SWITCH_MODE_ACCUMULATE, "$none$",
-           "specify ape tag and value, arguments must have form tag=val, "
-           "this option can be used multiple times");
+SWITCH SwitchPair(
+    "p", "general", SWITCH_TYPE_STRING, SWITCH_MODE_ACCUMULATE, "$none$",
+    "specify ape tag and value, arguments must have form tag=val, this option "
+    "can be used multiple times");
 
 SWITCH SwitchFilePair(
     "f", "general", SWITCH_TYPE_STRING, SWITCH_MODE_ACCUMULATE, "$none$",
-    "specify ape tag and file pathname, arguments must have form "
-    "tag=pathname, this option can be used multiple times");
+    "specify ape tag and pathname for embedding or extracting data, arguments "
+    "must have form tag=pathname, this option can be used multiple times");
 
 SWITCH SwitchMode("m", "general", SWITCH_TYPE_STRING, SWITCH_MODE_OVERWRITE,
                   "read", "specify mode (read, update, overwrite, or erase)");
@@ -505,14 +510,14 @@ change or create APE tag for file input-file
 apetag operates in one of three modes:
 Mode read (default):
     read and dump APE tag if present
-    dump an item to a file with the -f option
+    extract an item to a file with the -f option
         e.g.: -f "Cover Art (front)"=cover.jpg
-    dump item "Cover Art (front)" to file cover.jpg
+    extract item "Cover Art (front)" to file cover.jpg
 
 Mode update:
     change selected key,value pairs
     the pairs are specified with the -p or -f options
-        e.g.: -p Artist=Nosferaru -p Album=Bite 
+        e.g.: -p Artist=Nosferaru -p Album=Bite
     remove item Artist, change item Album to Cool
     tags not listed with the -p or -f option will remain unchanged
     tags with empty values are removed
@@ -532,6 +537,26 @@ Switch summary:
   return -1;
 }
 
+const pair<string, string> ParsedPair (const string &pair) {
+  const UINT32 len = pair.length();
+
+  UINT32 pos_equal_sign;
+  for (pos_equal_sign = 0; pos_equal_sign < len; pos_equal_sign++) {
+    if (pair[pos_equal_sign] == '=')
+      break;
+  }
+
+  if (pos_equal_sign >= len) {
+    Error("pair : " + pair + " does not contain a \'=\'\n");
+  }
+
+  const string key = pair.substr(0, pos_equal_sign);
+  pos_equal_sign++;
+  const string val = pair.substr(pos_equal_sign, len - pos_equal_sign);
+
+  return make_pair(key, val);
+}
+
 void HandleModeRead(TAG *tag) {
   map<string, string> items;
 
@@ -547,7 +572,7 @@ void HandleModeRead(TAG *tag) {
 
     items[key] = value;
 
-    if (flags == 2) {
+    if (flags == APE_TAG_ITEM_FLAG_BINARY) {
       cout << "\"" + key + "\"" + " <Binary>\n";
     } else {
       cout << "\"" + key + "\" \"" + value + "\"\n";
@@ -558,23 +583,11 @@ void HandleModeRead(TAG *tag) {
 
   // we skip the first entry
   for (UINT32 i = 1; i < num_file_items; i++) {
-    const string &pair = SwitchFilePair.ValueString(i);
+    const pair<string, string> pair =
+        ParsedPair(SwitchFilePair.ValueString(i));
 
-    const UINT32 len = pair.length();
-
-    UINT32 pos_equal_sign;
-    for (pos_equal_sign = 0; pos_equal_sign < len; pos_equal_sign++) {
-      if (pair[pos_equal_sign] == '=')
-        break;
-    }
-
-    if (pos_equal_sign >= len) {
-      Error("pair : " + pair + " does not contain a \'=\'\n");
-    }
-
-    string key = pair.substr(0, pos_equal_sign);
-    pos_equal_sign++;
-    string val = pair.substr(pos_equal_sign, len - pos_equal_sign);
+    const string &key = pair.first;
+    const string &val = pair.second;
 
     if (items.count(key)) {
       const string &value = items[key];
@@ -601,55 +614,28 @@ void HandleModeRead(TAG *tag) {
 }
 
 void HandleModeUpdate(TAG *tag) {
-
   const UINT32 num_items = SwitchPair.ValueNumber();
 
   // we skip the first entry
   for (UINT32 i = 1; i < num_items; i++) {
-    const string &pair = SwitchPair.ValueString(i);
+    const pair<string, string> pair = ParsedPair(SwitchPair.ValueString(i));
 
-    const UINT32 len = pair.length();
-
-    UINT32 pos_equal_sign;
-    for (pos_equal_sign = 0; pos_equal_sign < len; pos_equal_sign++) {
-      if (pair[pos_equal_sign] == '=')
-        break;
-    }
-
-    if (pos_equal_sign >= len) {
-      Error("pair : " + pair + " does not contain a \'=\'\n");
-    }
-
-    string key = pair.substr(0, pos_equal_sign);
-    pos_equal_sign++;
-    string val = pair.substr(pos_equal_sign, len - pos_equal_sign);
+    const string &key = pair.first;
+    const string &val = pair.second;
 
     Debug("adding (" + key + "," + val + ")\n");
 
-    tag->UpdateItem(new ITEM(key, val, 0));
+    tag->UpdateItem(new ITEM(key, val, APE_TAG_ITEM_FLAG_TEXT));
   }
 
   const UINT32 num_file_items = SwitchFilePair.ValueNumber();
 
   // we skip the first entry
   for (UINT32 i = 1; i < num_file_items; i++) {
-    const string &pair = SwitchFilePair.ValueString(i);
+    pair<string, string> pair = ParsedPair(SwitchFilePair.ValueString(i));
 
-    const UINT32 len = pair.length();
-
-    UINT32 pos_equal_sign;
-    for (pos_equal_sign = 0; pos_equal_sign < len; pos_equal_sign++) {
-      if (pair[pos_equal_sign] == '=')
-        break;
-    }
-
-    if (pos_equal_sign >= len) {
-      Error("pair : " + pair + " does not contain a \'=\'\n");
-    }
-
-    string key = pair.substr(0, pos_equal_sign);
-    pos_equal_sign++;
-    string val = pair.substr(pos_equal_sign, len - pos_equal_sign);
+    const string &key = pair.first;
+    string val = pair.second;
 
     if (val.length()) {
       fstream file;
@@ -668,7 +654,7 @@ void HandleModeUpdate(TAG *tag) {
 
     Debug("adding (" + key + "," + " <Binary>)\n");
 
-    tag->UpdateItem(new ITEM(key, val, 2));
+    tag->UpdateItem(new ITEM(key, val, APE_TAG_ITEM_FLAG_BINARY));
   }
 }
 
