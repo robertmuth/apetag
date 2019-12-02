@@ -98,6 +98,9 @@ LOCALFUN string ExtractVersion() {
 #define APE_FLAG_HAVE_HEADER (1 << 31)
 #define APE_FLAG_IS_HEADER (1 << 29)
 
+#define APE_FLAG_READWRITE (0 << 0)
+#define APE_FLAG_READONLY (1 << 0)
+
 #define APE_TAG_ITEM_FLAG_TEXT (0 << 0)
 #define APE_TAG_ITEM_FLAG_BINARY (1 << 1)
 #define APE_TAG_ITEM_FLAG_EXTERNAL_RESOURCE (1 << 2)
@@ -161,7 +164,7 @@ public:
 // (value) length. If two values are the same length the items are ordered by
 // key.
 struct ITEM_ORDER {
-  bool operator()(const ITEM *i1, ITEM *i2) const {
+  bool operator()(const ITEM *i1, const ITEM *i2) const {
     if (i1->Value().length() == i2->Value().length()) {
       return i1->Key() < i2->Key();
     } else {
@@ -170,7 +173,7 @@ struct ITEM_ORDER {
   }
 };
 
-typedef set<ITEM *, ITEM_ORDER> ITEM_SET;
+typedef set<const ITEM *, ITEM_ORDER> ITEM_SET;
 
 // ========================================================================
 // Collection of all items associated with a file
@@ -191,7 +194,27 @@ public:
 
   VOID DelAllItems() {
     Debug("erasing all items\n");
+
+    ITEM_SET items;
+
+    ITEM_SET::const_iterator it = _items.begin();
+    while (it != _items.end()) {
+      const ITEM *item = *it;
+
+      const string &key = item->Key();
+      const UINT32 &flags = item->Flags();
+
+      if ((flags & APE_FLAG_READONLY) == APE_FLAG_READONLY) {
+        Warning("read only item with key " + key + " was not " +
+                "erased\n");
+        items.insert(item);
+      }
+
+      ++it;
+    }
+
     _items.clear();
+    _items = items;
   }
 
   // According to the APEv2 tag specification, item keys that differ only by
@@ -200,36 +223,55 @@ public:
 
   // If an item key already exists and its new value is empty, we remove the
   // existing item.
-  VOID UpdateItem(ITEM *newitem) {
+  VOID UpdateItem(const ITEM *newitem, const BOOL &force = false) {
     const string &newkey = newitem->Key();
     const string &newvalue = newitem->Value();
     const UINT32 &newflags = newitem->Flags();
 
+    const ITEM *item = FindItem(newkey);
+
+    if (item->Key().size()) {
+      const string &key = item->Key();
+      const UINT32 &flags = item->Flags();
+
+      if (((flags & APE_FLAG_READONLY) == APE_FLAG_READONLY) && !force) {
+        Warning("read only item with key " + key + " was not " +
+                "modified\n");
+        return;
+      }
+
+      if (newvalue.length() == 0) {
+        Debug("erasing item with key " + key + "\n");
+        _items.erase(item);
+        return;
+      } else {
+        Debug("replacing item with key " + key + "\n");
+        _items.erase(item);
+        _items.insert(newitem);
+        return;
+      }
+    }
+
+    Debug("adding item with key " + newkey + " and flags " +
+          hexstr(newflags) + "\n");
+    _items.insert(newitem);
+  }
+
+  const ITEM *FindItem(const string &findkey) const {
     ITEM_SET::const_iterator it = _items.begin();
     while (it != _items.end()) {
       const ITEM *item = *it;
 
       const string &key = item->Key();
 
-      if (CaseCompare(key, newkey)) {
-        if (newvalue.length() == 0) {
-          Debug("erasing item with key " + key + "\n");
-          _items.erase(it);
-          return;
-        } else {
-          Debug("replacing item with key " + key + "\n");
-          _items.erase(it);
-          _items.insert(newitem);
-          return;
-        }
+      if (CaseCompare(key, findkey)) {
+        return item;
       }
 
       ++it;
     }
 
-    Debug("adding item with key " + newkey + " and flags " +
-          hexstr(newflags) + "\n");
-    _items.insert(newitem);
+    return new ITEM();
   }
 
   const ITEM_SET &Items() const { return _items; }
@@ -501,6 +543,12 @@ SWITCH SwitchFilePair(
 SWITCH SwitchMode("m", "general", SWITCH_TYPE_STRING, SWITCH_MODE_OVERWRITE,
                   "read", "specify mode (read, update, overwrite, or erase)");
 
+SWITCH SwitchRo("ro", "general", SWITCH_TYPE_STRING, SWITCH_MODE_ACCUMULATE,
+                  "$none$", "specify ape tag to set read only");
+
+SWITCH SwitchRw("rw", "general", SWITCH_TYPE_STRING, SWITCH_MODE_ACCUMULATE,
+                  "$none$", "specify ape tag to set read write");
+
 // ========================================================================
 int Usage() {
   cout << "APETAG version: " << ExtractVersion()
@@ -509,6 +557,7 @@ int Usage() {
 Web: http://www.muth.org/Robert/Apetag
 
 Usage: apetag -i input-file -m mode  {[-p|-f|-r] tag=value}*
+Or: apetag -i input-file -m {update} {[-rw|-ro] tag}
 
 change or create APE tag for file input-file
 
@@ -526,10 +575,12 @@ Mode update:
     update items Artist, Album and Homepage
     tags not listed with the -p, -f, or -r option will remain unchanged
     tags with empty values are removed
+    tags set read only will remain unchanged
 
 Mode overwrite:
     Overwrite all the tags with items specified by the -p, -f, or -r options
     tags not listed with the -p, -f, or -r option will be removed
+    tags set read only will remain unchanged
     this mode is also used to create ape tags initially
 
 Mode erase:
@@ -584,6 +635,12 @@ void HandleModeRead(TAG *tag) {
         dumpitem = "BIN \"" + key + "\"";
     } else if ((flags & APE_TAG_ITEM_FLAG_TEXT) == APE_TAG_ITEM_FLAG_TEXT) {
         dumpitem = "TXT \"" + key + "\" \"" + value + "\"";
+    }
+
+    if ((~flags & APE_FLAG_READONLY) == APE_FLAG_READONLY) {
+      dumpitem += " RW";
+    } else {
+      dumpitem += " RO";
     }
 
     cout << dumpitem + "\n";
@@ -680,6 +737,42 @@ void HandleModeUpdate(TAG *tag) {
     Debug("adding (" + key + "," + " <Binary>)\n");
 
     tag->UpdateItem(new ITEM(key, val, APE_TAG_ITEM_FLAG_BINARY));
+  }
+
+  const UINT32 num_rw_items = SwitchRw.ValueNumber();
+
+  // we skip the first entry
+  for (UINT32 i = 1; i < num_rw_items; i++) {
+    const string &key = SwitchRw.ValueString(i);
+
+    Debug("setting (" + key + ") read write\n");
+
+    const ITEM *item = tag->FindItem(key);
+    if (item->Value().size()) {
+      UINT32 flags = item->Flags();
+      flags &= ~APE_FLAG_READONLY;
+      tag->UpdateItem(new ITEM(item->Key(), item->Value(), flags), true);
+    } else {
+      Warning("item \"" + key + "\" not found\n");
+    }
+  }
+
+  const UINT32 num_ro_items = SwitchRo.ValueNumber();
+
+  // we skip the first entry
+  for (UINT32 i = 1; i < num_ro_items; i++) {
+    const string &key = SwitchRo.ValueString(i);
+
+    Debug("setting (" + key + ") read only\n");
+
+    const ITEM *item = tag->FindItem(key);
+    if (item->Value().size()) {
+      UINT32 flags = item->Flags();
+      flags |= APE_FLAG_READONLY;
+      tag->UpdateItem(new ITEM(item->Key(), item->Value(), flags));
+    } else {
+      Warning("item \"" + key + "\" not found\n");
+    }
   }
 }
 
