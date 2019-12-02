@@ -115,6 +115,8 @@ extern std::string Reformat(const std::string &s, const std::string &prefix,
 
 extern UINT32 Tokenize(const std::string &line, std::string *array, UINT32 n);
 
+extern BOOL CaseCompare(const std::string &s1, const std::string &s2);
+
 // ========================================================================
 extern const std::string Line1;
 extern const std::string Line2;
