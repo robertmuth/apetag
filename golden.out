@@ -215,4 +215,30 @@ Items:
 TXT "test" "FILE2" RW
 ERS "externalcover" "/DEV/ZERO" RW
 BIN "test.sh" RW
+============================================================
+test 16
+W: file does not contain ape tag
+Found APE tag at offset 193
+TAG IS SET READ ONLY
+Items:
+TXT "Title" "--title2--" RW
+ERS "testpage" "http://bo.gus/website/page.html" RW
+BIN "test.sh" RW
+Found APE tag at offset 193
+Items:
+TXT "Title" "--title2--" RW
+ERS "testpage" "http://bo.gus/website/page.html" RW
+BIN "test.sh" RW
+============================================================
+test 17
+W: file does not contain ape tag
+W: truncating file from 6577 to 193
+W: file does not contain ape tag
+No valid APE tag found
+W: file does not contain ape tag
+Found APE tag at offset 193
+Items:
+TXT "Title" "--title2--" RW
+ERS "testpage" "http://bo.gus/website/page.html" RW
+BIN "test.sh" RW
 done
