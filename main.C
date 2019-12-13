@@ -106,6 +106,8 @@ LOCALFUN string ExtractVersion() {
 #define APE_TAG_ITEM_FLAG_EXTERNAL_RESOURCE (1 << 2)
 #define APE_TAG_ITEM_FLAG_RESERVED (1 << 3)
 
+#define ID3V1_MAGIC "TAG"
+
 typedef struct {
   char _magic[8];
   char _version[4];
@@ -114,6 +116,11 @@ typedef struct {
   char _flags[4];
   char _reserved[8];
 } APE_HEADER_FOOTER;
+
+typedef struct {
+  char _magic[3];
+  char _tag[125];
+} ID3v1_TAG;
 
 // ========================================================================
 LOCALFUN UINT32 ReadLittleEndianUint32(const char *cp) {
@@ -382,8 +389,15 @@ LOCALFUN VOID WriteApeItems(fstream &input, const TAG *tag) {
 }
 
 // ========================================================================
-LOCALFUN VOID WriteApeTag(fstream &input, const TAG *tag,
-                          const string &filename) {
+LOCALFUN VOID WriteId3v1(fstream &input, const ID3v1_TAG &tag) {
+  Info("writing id3v1 tag at " + decstr(int(input.tellp())) + "\n");
+
+  input.write(tag._magic, 3);
+  input.write(tag._tag, sizeof(ID3v1_TAG) - 3);
+}
+
+// ========================================================================
+LOCALFUN VOID WriteApeTag(fstream &input, const TAG *tag) {
   Info("file length " + decstr(tag->FileLength()) + "\n");
 
   const UINT32 tag_offset =
@@ -430,17 +444,35 @@ LOCALFUN TAG *ReadAndProcessApeHeader(fstream &input) {
     return new TAG(file_length, 0, 0, 0);
   }
 
-  // read footer
+  // The APEv2 specification says that the APEv2 tag, when placed at the end of
+  // a file, must be placed after the last frame and before any ID3v1 tag.
 
+  UINT32 offset = sizeof(ID3v1_TAG);
+
+  ID3v1_TAG id3v1tag;
+
+  input.seekg(file_length - offset);
+  input.read(reinterpret_cast<char *>(&id3v1tag), sizeof(ID3v1_TAG));
+
+  const string id3magic(id3v1tag._magic, 0, 3);
+
+  if (id3magic == ID3V1_MAGIC) {
+    Info("file contains an id3v1 tag at " +
+         decstr(file_length - offset) + "\n");
+  } else {
+    offset = 0;
+  }
+
+  // read footer
   APE_HEADER_FOOTER ape;
-  input.seekg(file_length - sizeof(APE_HEADER_FOOTER));
+  input.seekg(file_length - offset - sizeof(APE_HEADER_FOOTER));
   input.read(reinterpret_cast<char *>(&ape), sizeof(APE_HEADER_FOOTER));
 
   const string magic(ape._magic, 0, 8);
 
   if (magic != APE_MAGIC) {
     Warning("file does not contain ape tag\n");
-    return new TAG(file_length, 0, 0, 0);
+    return new TAG(file_length, file_length - offset, 0, 0);
   }
 
   const UINT32 version = ReadLittleEndianUint32(ape._version);
@@ -466,8 +498,9 @@ LOCALFUN TAG *ReadAndProcessApeHeader(fstream &input) {
 
   UINT32 tagflags = 0;
 
-  if (file_length >= length + sizeof(APE_HEADER_FOOTER)) {
-    input.seekg(-(INT32)(length + sizeof(APE_HEADER_FOOTER)), ios::end);
+  if (file_length >= (length + sizeof(APE_HEADER_FOOTER) + offset)) {
+    input.seekg(-(INT32)(length + sizeof(APE_HEADER_FOOTER) +
+                offset), ios::end);
     APE_HEADER_FOOTER ape2;
 
     input.read((char *)&ape2, sizeof(APE_HEADER_FOOTER));
@@ -497,11 +530,12 @@ LOCALFUN TAG *ReadAndProcessApeHeader(fstream &input) {
 
   TAG *tag = new TAG(
       file_length,
-      file_length - length - have_header * sizeof(APE_HEADER_FOOTER), items, tagflags);
+      file_length - length - offset - have_header * sizeof(APE_HEADER_FOOTER),
+      items, tagflags);
 
   // read and process tag data
 
-  input.seekg(-(INT32)length, ios::end);
+  input.seekg(-(INT32)(length + offset), ios::end);
 
   char *const buffer = new char[length];
 
@@ -828,7 +862,7 @@ void HandleRoRw(TAG *tag, const BOOL &ro) {
   }
 }
 
-void HandleTagImport (fstream &input, TAG *tag, const string &filename) {
+void HandleTagImport (fstream &input, TAG *tag) {
   const string &infile = SwitchFile.ValueString();
   fstream in(infile.c_str(), ios_base::in);
 
@@ -846,7 +880,7 @@ void HandleTagImport (fstream &input, TAG *tag, const string &filename) {
     ++it;
   }
 
-  WriteApeTag(input, offsettag, filename);
+  WriteApeTag(input, offsettag);
 }
 
 void HandleTagExport (TAG *tag) {
@@ -866,7 +900,7 @@ void HandleTagExport (TAG *tag) {
 
   fstream of(outfile.c_str(), ios_base::out);
 
-  WriteApeTag(of, outtag, outfile);
+  WriteApeTag(of, outtag);
 }
 
 // ========================================================================
@@ -920,8 +954,21 @@ int main(int argc, char *argv[]) {
 
   unique_ptr<TAG> tag(ReadAndProcessApeHeader(input));
 
+  const UINT32 id3_offset = tag->FileLength() - sizeof(ID3v1_TAG);
+
+  ID3v1_TAG id3v1tag;
+
+  input.seekg(id3_offset);
+  input.read(reinterpret_cast<char *>(&id3v1tag), sizeof(ID3v1_TAG));
+
+  const string id3magic(id3v1tag._magic, 0, 3);
+
+  const BOOL has_apetag = (!((tag->TagOffset() == id3_offset)
+                       && (id3magic == ID3V1_MAGIC))
+                       && (tag->TagOffset() != tag->FileLength()));
+
   if (mode == "read") {
-    if (tag->TagOffset() == 0) {
+    if (!has_apetag) {
       cout << "No valid APE tag found\n";
     } else {
       if (SwitchFile.ValueString().size()) {
@@ -935,7 +982,9 @@ int main(int argc, char *argv[]) {
       Error("tag is read only\n");
     } else {
       HandleModeUpdate(tag.get());
-      WriteApeTag(input, tag.get(), filename);
+      WriteApeTag(input, tag.get());
+      if (id3magic == ID3V1_MAGIC)
+        WriteId3v1(input, id3v1tag);
       Truncate(input, tag.get(), filename);
     }
   } else if (mode == "overwrite") {
@@ -943,29 +992,33 @@ int main(int argc, char *argv[]) {
       Error("tag is read only\n");
     } else {
       if (SwitchFile.ValueString().size()) {
-        HandleTagImport(input, tag.get(), filename);
+        HandleTagImport(input, tag.get());
       } else {
         tag->DelAllItems();
         HandleModeUpdate(tag.get());
-        WriteApeTag(input, tag.get(), filename);
-        Truncate(input, tag.get(), filename);
+        WriteApeTag(input, tag.get());
       }
+      if (id3magic == ID3V1_MAGIC)
+        WriteId3v1(input, id3v1tag);
+      Truncate(input, tag.get(), filename);
     }
   } else if (mode == "erase") {
-    if (tag->TagOffset() == 0) {
+    if (!has_apetag) {
       cout << "No valid APE tag found\n";
     } else {
-      const UINT32 tag_offset =
-          tag->TagOffset() == 0 ? tag->FileLength() : tag->TagOffset();
-      input.seekp(tag_offset);
+      input.seekp(tag->TagOffset());
+      if (id3magic == ID3V1_MAGIC)
+        WriteId3v1(input, id3v1tag);
       Truncate(input, tag.get(), filename);
     }
   } else if (mode == "setro" || mode == "setrw") {
-    if (tag->TagOffset() == 0) {
+    if (!has_apetag) {
       cout << "No valid APE tag found\n";
     } else {
       HandleRoRw(tag.get(), (mode == "setro"));
-      WriteApeTag(input, tag.get(), filename);
+      WriteApeTag(input, tag.get());
+      if (id3magic == ID3V1_MAGIC)
+        WriteId3v1(input, id3v1tag);
       Truncate(input, tag.get(), filename);
     }
   } else {
