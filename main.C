@@ -401,7 +401,10 @@ LOCALFUN VOID WriteApeTag(fstream &input, const TAG *tag,
   WriteApeHeaderFooter(input, tag, tag->Flags() | APE_FLAG_IS_HEADER | APE_FLAG_HAVE_HEADER);
   WriteApeItems(input, tag);
   WriteApeHeaderFooter(input, tag, tag->Flags() | APE_FLAG_HAVE_HEADER);
+}
 
+LOCALFUN VOID Truncate(fstream &input, const TAG *tag,
+                       const string &filename) {
   UINT32 pos = input.tellp();
 
   if (pos < tag->FileLength()) {
@@ -907,7 +910,8 @@ int main(int argc, char *argv[]) {
     Error("no input file specified\n");
 
   const BOOL change_file = (mode == "overwrite" || mode == "update"
-                            || mode == "setro" || mode == "setrw");
+                            || mode == "erase" || mode == "setro"
+                            || mode == "setrw");
 
   fstream input(filename.c_str(),
                 change_file ? (ios_base::in | ios_base::out) : ios_base::in);
@@ -932,6 +936,7 @@ int main(int argc, char *argv[]) {
     } else {
       HandleModeUpdate(tag.get());
       WriteApeTag(input, tag.get(), filename);
+      Truncate(input, tag.get(), filename);
     }
   } else if (mode == "overwrite") {
     if ((tag->Flags() & APE_FLAG_READONLY) == APE_FLAG_READONLY) {
@@ -943,6 +948,7 @@ int main(int argc, char *argv[]) {
         tag->DelAllItems();
         HandleModeUpdate(tag.get());
         WriteApeTag(input, tag.get(), filename);
+        Truncate(input, tag.get(), filename);
       }
     }
   } else if (mode == "erase") {
@@ -951,15 +957,8 @@ int main(int argc, char *argv[]) {
     } else {
       const UINT32 tag_offset =
           tag->TagOffset() == 0 ? tag->FileLength() : tag->TagOffset();
-
-      if (tag_offset < tag->FileLength()) {
-        Warning("truncating file from " + decstr(tag->FileLength()) + " to " +
-                decstr(tag_offset) + "\n");
-        int result = truncate(filename.c_str(), tag_offset);
-        if (result) {
-          Warning("truncating file failed");
-        }
-      }
+      input.seekp(tag_offset);
+      Truncate(input, tag.get(), filename);
     }
   } else if (mode == "setro" || mode == "setrw") {
     if (tag->TagOffset() == 0) {
@@ -967,6 +966,7 @@ int main(int argc, char *argv[]) {
     } else {
       HandleRoRw(tag.get(), (mode == "setro"));
       WriteApeTag(input, tag.get(), filename);
+      Truncate(input, tag.get(), filename);
     }
   } else {
     Error("unknown mode\n");
