@@ -23,11 +23,11 @@ Found APE tag at offset 193
 Items:
 TXT "Year" "--year2--" RW
 TXT "Title" "--title2--" RW
-W: truncating file from 303 to 281
+W: truncating file from 431 to 409
 Found APE tag at offset 193
 Items:
 TXT "Title" "--title3--" RW
-W: truncating file from 281 to 193
+W: truncating file from 409 to 321
 W: file does not contain ape tag
 No valid APE tag found
 ============================================================
@@ -39,14 +39,14 @@ Items:
 TXT "Year" "--year2--" RW
 TXT "Title" "--title2--" RO
 W: read only item with key Title was not erased
-W: truncating file from 303 to 281
+W: truncating file from 431 to 409
 Found APE tag at offset 193
 Items:
 TXT "Title" "--title2--" RO
 Found APE tag at offset 193
 Items:
 TXT "Title" "--title2--" RW
-W: truncating file from 281 to 257
+W: truncating file from 409 to 385
 Found APE tag at offset 193
 Items:
 ============================================================
@@ -56,7 +56,7 @@ Found APE tag at offset 193
 Items:
 TXT "Year" "--year2--" RW
 TXT "Title" "--title2--" RW
-W: truncating file from 303 to 281
+W: truncating file from 431 to 409
 Found APE tag at offset 193
 Items:
 TXT "Title" "--title3--" RW
@@ -81,11 +81,11 @@ Found APE tag at offset 193
 Items:
 BIN "NotTest" RW
 BIN "Test.sh" RW
-W: truncating file from 70585 to 1374
+W: truncating file from 70713 to 1502
 Found APE tag at offset 193
 Items:
 BIN "Test.sh" RW
-W: truncating file from 1374 to 193
+W: truncating file from 1502 to 321
 W: file does not contain ape tag
 No valid APE tag found
 ============================================================
@@ -97,14 +97,14 @@ Items:
 BIN "NotTest" RW
 BIN "Test.sh" RO
 W: read only item with key Test.sh was not erased
-W: truncating file from 70585 to 35421
+W: truncating file from 70713 to 35549
 Found APE tag at offset 193
 Items:
 BIN "Test.sh" RO
 Found APE tag at offset 193
 Items:
 BIN "Test.sh" RW
-W: truncating file from 35421 to 257
+W: truncating file from 35549 to 385
 Found APE tag at offset 193
 Items:
 ============================================================
@@ -114,7 +114,7 @@ Found APE tag at offset 193
 Items:
 BIN "NotTest" RW
 BIN "Test.sh" RW
-W: truncating file from 70585 to 1374
+W: truncating file from 70713 to 1502
 Found APE tag at offset 193
 Items:
 BIN "Test.sh" RW
@@ -139,11 +139,11 @@ Found APE tag at offset 193
 Items:
 ERS "ExternalCover" "/dev/zero" RW
 ERS "TestPage" "http://bo.gus/website/page.html" RW
-W: truncating file from 336 to 306
+W: truncating file from 464 to 434
 Found APE tag at offset 193
 Items:
 ERS "TestPage" "http://bo.gus/addr/testpage.html" RW
-W: truncating file from 306 to 193
+W: truncating file from 434 to 321
 W: file does not contain ape tag
 No valid APE tag found
 ============================================================
@@ -155,14 +155,14 @@ Items:
 ERS "ExternalCover" "/dev/zero" RW
 ERS "TestPage" "http://bo.gus/website/page.html" RO
 W: read only item with key TestPage was not erased
-W: truncating file from 336 to 305
+W: truncating file from 464 to 433
 Found APE tag at offset 193
 Items:
 ERS "TestPage" "http://bo.gus/website/page.html" RO
 Found APE tag at offset 193
 Items:
 ERS "TestPage" "http://bo.gus/website/page.html" RW
-W: truncating file from 305 to 257
+W: truncating file from 433 to 385
 Found APE tag at offset 193
 Items:
 ============================================================
@@ -172,7 +172,7 @@ Found APE tag at offset 193
 Items:
 ERS "ExternalCover" "/dev/zero" RW
 ERS "TestPage" "http://bo.gus/website/page.html" RW
-W: truncating file from 336 to 306
+W: truncating file from 464 to 434
 Found APE tag at offset 193
 Items:
 ERS "TestPage" "http://bo.gus/addr/testpage.html" RW
@@ -232,7 +232,7 @@ BIN "test.sh" RW
 ============================================================
 test 17
 W: file does not contain ape tag
-W: truncating file from 6577 to 193
+W: truncating file from 6705 to 321
 W: file does not contain ape tag
 No valid APE tag found
 W: file does not contain ape tag
