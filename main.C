@@ -539,38 +539,38 @@ LOCALFUN TAG *ReadAndProcessApeHeader(fstream &input) {
 
   input.seekg(-(INT32)(length + offset), ios::end);
 
-  char *const buffer = new char[length];
+  INT32 items_length = length - sizeof(APE_HEADER_FOOTER);
 
-  input.read(buffer, length);
-
-  char *cp = buffer;
-
-  // FIXME: the following code needs buffer overun checks
+  const char *tag_items = new char[items_length];
+  input.read((char *)tag_items, items_length);
 
   for (UINT32 i = 0; i < items; i++) {
-    const UINT32 l = ReadLittleEndianUint32(cp);
-    cp += 4;
-    const UINT32 f = ReadLittleEndianUint32(cp);
-    cp += 4;
+    const UINT32 l = ReadLittleEndianUint32(tag_items);
+    tag_items += 4;
+    const UINT32 f = ReadLittleEndianUint32(tag_items);
+    tag_items += 4;
 
     UINT32 flags = f;
 
-    string key(cp);
+    string key(tag_items);
 
-    cp += 1 + key.length();
+    tag_items += 1 + key.length();
 
-    string value(l, ' ');
-    for (UINT32 p = 0; p < l; p++) {
-      value[p] = cp[p];
-    }
+    string value(tag_items, l);
 
-    cp += l;
+    tag_items += l;
 
     Info("tag " + decstr(i) + ":  len: " + decstr(l) + "  flags: " + hexstr(f) +
          "  key: " + key + " value: " +
          (flags == APE_TAG_ITEM_FLAG_BINARY ? "<Embedded Binary>" : value) +
          "\n");
     tag->UpdateItem(new ITEM(key, value, flags));
+
+    items_length -= 4 + 4 + 1 + key.length() + value.length();
+  }
+
+  if (items_length != 0) {
+    Warning("items size mismatch\n");
   }
 
   return tag;
