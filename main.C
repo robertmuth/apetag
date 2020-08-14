@@ -704,7 +704,7 @@ void HandleModeRead(TAG *tag) {
 
     string dumpitem;
     if ((flags & APE_TAG_ITEM_FLAG_EXTERNAL_RESOURCE) == APE_TAG_ITEM_FLAG_EXTERNAL_RESOURCE) {
-        dumpitem = "ERS \"" + key + "\" \"" + value + "\"";
+        dumpitem = "RSC \"" + key + "\" \"" + value + "\"";
     } else if ((flags & APE_TAG_ITEM_FLAG_BINARY) == APE_TAG_ITEM_FLAG_BINARY) {
         dumpitem = "BIN \"" + key + "\"";
     } else if ((flags & APE_TAG_ITEM_FLAG_TEXT) == APE_TAG_ITEM_FLAG_TEXT) {

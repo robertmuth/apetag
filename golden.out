@@ -123,26 +123,26 @@ test 10
 W: file does not contain ape tag
 Found APE tag at offset 193
 Items:
-ERS "TestPage" "http://bo.gus/addr" RW
+RSC "TestPage" "http://bo.gus/addr" RW
 Found APE tag at offset 193
 Items:
-ERS "testpage" "http://bo.gus/addr" RW
+RSC "testpage" "http://bo.gus/addr" RW
 W: item "page" not found
 W: item "page" not found
 Found APE tag at offset 193
 Items:
-ERS "testpage" "http://bo.gus/addr" RW
+RSC "testpage" "http://bo.gus/addr" RW
 ============================================================
 test 11
 W: file does not contain ape tag
 Found APE tag at offset 193
 Items:
-ERS "ExternalCover" "/dev/zero" RW
-ERS "TestPage" "http://bo.gus/website/page.html" RW
+RSC "ExternalCover" "/dev/zero" RW
+RSC "TestPage" "http://bo.gus/website/page.html" RW
 W: truncating file from 464 to 434
 Found APE tag at offset 193
 Items:
-ERS "TestPage" "http://bo.gus/addr/testpage.html" RW
+RSC "TestPage" "http://bo.gus/addr/testpage.html" RW
 W: truncating file from 434 to 321
 W: file does not contain ape tag
 No valid APE tag found
@@ -152,16 +152,16 @@ W: file does not contain ape tag
 W: read only item with key TestPage was not modified
 Found APE tag at offset 193
 Items:
-ERS "ExternalCover" "/dev/zero" RW
-ERS "TestPage" "http://bo.gus/website/page.html" RO
+RSC "ExternalCover" "/dev/zero" RW
+RSC "TestPage" "http://bo.gus/website/page.html" RO
 W: read only item with key TestPage was not erased
 W: truncating file from 464 to 433
 Found APE tag at offset 193
 Items:
-ERS "TestPage" "http://bo.gus/website/page.html" RO
+RSC "TestPage" "http://bo.gus/website/page.html" RO
 Found APE tag at offset 193
 Items:
-ERS "TestPage" "http://bo.gus/website/page.html" RW
+RSC "TestPage" "http://bo.gus/website/page.html" RW
 W: truncating file from 433 to 385
 Found APE tag at offset 193
 Items:
@@ -170,24 +170,24 @@ test 13
 W: file does not contain ape tag
 Found APE tag at offset 193
 Items:
-ERS "ExternalCover" "/dev/zero" RW
-ERS "TestPage" "http://bo.gus/website/page.html" RW
+RSC "ExternalCover" "/dev/zero" RW
+RSC "TestPage" "http://bo.gus/website/page.html" RW
 W: truncating file from 464 to 434
 Found APE tag at offset 193
 Items:
-ERS "TestPage" "http://bo.gus/addr/testpage.html" RW
+RSC "TestPage" "http://bo.gus/addr/testpage.html" RW
 ============================================================
 test 14
 W: file does not contain ape tag
 Found APE tag at offset 193
 Items:
 TXT "Test" "File" RW
-ERS "ExternalCover" "/dev/zero" RW
+RSC "ExternalCover" "/dev/zero" RW
 BIN "Test.sh" RW
 Found APE tag at offset 193
 Items:
 TXT "test" "File" RW
-ERS "externalcover" "/dev/zero" RW
+RSC "externalcover" "/dev/zero" RW
 BIN "test.sh" RW
 ============================================================
 test 15
@@ -195,7 +195,7 @@ W: file does not contain ape tag
 Found APE tag at offset 193
 Items:
 TXT "test" "file" RO
-ERS "externalcover" "/dev/zero" RO
+RSC "externalcover" "/dev/zero" RO
 BIN "test.sh" RO
 W: read only item with key test was not modified
 W: read only item with key externalcover was not modified
@@ -203,17 +203,17 @@ W: read only item with key test.sh was not modified
 Found APE tag at offset 193
 Items:
 TXT "test" "file" RO
-ERS "externalcover" "/dev/zero" RO
+RSC "externalcover" "/dev/zero" RO
 BIN "test.sh" RO
 Found APE tag at offset 193
 Items:
 TXT "test" "file" RW
-ERS "externalcover" "/dev/zero" RW
+RSC "externalcover" "/dev/zero" RW
 BIN "test.sh" RW
 Found APE tag at offset 193
 Items:
 TXT "test" "FILE2" RW
-ERS "externalcover" "/DEV/ZERO" RW
+RSC "externalcover" "/DEV/ZERO" RW
 BIN "test.sh" RW
 ============================================================
 test 16
@@ -222,12 +222,12 @@ Found APE tag at offset 193
 TAG IS SET READ ONLY
 Items:
 TXT "Title" "--title2--" RW
-ERS "testpage" "http://bo.gus/website/page.html" RW
+RSC "testpage" "http://bo.gus/website/page.html" RW
 BIN "test.sh" RW
 Found APE tag at offset 193
 Items:
 TXT "Title" "--title2--" RW
-ERS "testpage" "http://bo.gus/website/page.html" RW
+RSC "testpage" "http://bo.gus/website/page.html" RW
 BIN "test.sh" RW
 ============================================================
 test 17
@@ -239,6 +239,6 @@ W: file does not contain ape tag
 Found APE tag at offset 193
 Items:
 TXT "Title" "--title2--" RW
-ERS "testpage" "http://bo.gus/website/page.html" RW
+RSC "testpage" "http://bo.gus/website/page.html" RW
 BIN "test.sh" RW
 done
