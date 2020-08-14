@@ -374,7 +374,9 @@ LOCALFUN VOID WriteApeItems(fstream &input, const TAG *tag) {
     const string &key = item->Key();
     const UINT32 key_length = key.length();
 
-    Info("writing item " + key + " " + value + " " + hexstr(flags) + "\n");
+    Info("writing item " + key + " " +
+         (flags == APE_TAG_ITEM_FLAG_BINARY ? "<Embedded Binary>" : value) +
+         " " + hexstr(flags) + "\n");
 
     WriteLittleEndianUint32(buf, value_length);
     input.write(buf, 4);
@@ -565,7 +567,9 @@ LOCALFUN TAG *ReadAndProcessApeHeader(fstream &input) {
     cp += l;
 
     Info("tag " + decstr(i) + ":  len: " + decstr(l) + "  flags: " + hexstr(f) +
-         "  key: " + key + "  value: " + value + "\n");
+         "  key: " + key + " value: " +
+         (flags == APE_TAG_ITEM_FLAG_BINARY ? "<Embedded Binary>" : value) +
+         "\n");
     tag->UpdateItem(new ITEM(key, value, flags));
   }
 
@@ -804,7 +808,7 @@ void HandleModeUpdate(TAG *tag) {
       file.close();
     }
 
-    Debug("adding (" + key + "," + " <Binary>)\n");
+    Debug("adding (" + key + "," + " <Embedded Binary>)\n");
 
     tag->UpdateItem(new ITEM(key, val, APE_TAG_ITEM_FLAG_BINARY));
   }
