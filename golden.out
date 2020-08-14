@@ -232,13 +232,13 @@ BIN "test.sh" RW
 ============================================================
 test 17
 W: file does not contain ape tag
-W: truncating file from 6705 to 321
-W: file does not contain ape tag
-No valid APE tag found
-W: file does not contain ape tag
 Found APE tag at offset 193
 Items:
 TXT "Title" "--title2--" RW
 RSC "testpage" "http://bo.gus/website/page.html" RW
 BIN "test.sh" RW
+W: file does not contain ape tag
+W: truncating file from 6522 to 385
+Found APE tag at offset 193
+Items:
 done

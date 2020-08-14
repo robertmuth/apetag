@@ -609,7 +609,7 @@ SWITCH SwitchRw("rw", "general", SWITCH_TYPE_STRING, SWITCH_MODE_ACCUMULATE,
                   "$none$", "specify ape tag to set read write");
 
 SWITCH SwitchFile("file", "general", SWITCH_TYPE_STRING, SWITCH_MODE_OVERWRITE,
-                  "", "specify pathname for tagfile");
+                  "", "specify pathname for ape-tagged import file");
 
 // ========================================================================
 int Usage() {
@@ -620,18 +620,16 @@ Web: http://www.muth.org/Robert/Apetag
 
 Usage: apetag -i input-file -m mode  {[-p|-f|-r] tag=value}*
 Or: apetag -i input-file -m {update} {[-rw|-ro] tag}
-Or: apetag -i input-file -m {[read|overwrite]} {-file tagfile}
+Or: apetag -i input-file -m {overwrite} {-file import-file}
 
 change or create APE tag for file input-file
 
 apetag operates in one of three modes:
 Mode read (default):
-    read and dump APE tag if present
+    read APE tag if present
     extract an item to a file with the -f option
         e.g.: -f "Cover Art (front)"=cover.jpg
     extract item "Cover Art (front)" to file cover.jpg
-    dump the APE tag to a file with the -file option
-    e.g.: -file tagdump.apetag
 
 Mode update:
     change selected key,value pairs
@@ -887,26 +885,6 @@ void HandleTagImport (fstream &input, TAG *tag) {
   WriteApeTag(input, offsettag);
 }
 
-void HandleTagExport (TAG *tag) {
-  const string &outfile = SwitchFile.ValueString();
-
-  if (ifstream(outfile.c_str()).good()) {
-    Error("output file exists: " + outfile + "\n");
-  }
-
-  TAG *outtag = new TAG(0, 0, tag->ItemCount(), tag->Flags());
-
-  ITEM_SET::const_iterator it = tag->Items().begin();
-  while (it != tag->Items().end()) {
-    outtag->UpdateItem(*it);
-    ++it;
-  }
-
-  fstream of(outfile.c_str(), ios_base::out);
-
-  WriteApeTag(of, outtag);
-}
-
 // ========================================================================
 int main(int argc, char *argv[]) {
   RegisterImageName(argv[0]);
@@ -975,11 +953,7 @@ int main(int argc, char *argv[]) {
     if (!has_apetag) {
       cout << "No valid APE tag found\n";
     } else {
-      if (SwitchFile.ValueString().size()) {
-        HandleTagExport(tag.get());
-      } else {
-        HandleModeRead(tag.get());
-      }
+      HandleModeRead(tag.get());
     }
   } else if (mode == "update") {
     if ((tag->Flags() & APE_FLAG_READONLY) == APE_FLAG_READONLY) {

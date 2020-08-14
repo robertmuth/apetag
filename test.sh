@@ -7,7 +7,6 @@ set -o errexit
 readonly APETAG=./apetag
 readonly MP3=./empty.mp3
 readonly MP3_CLONE=./clone.mp3
-readonly MP3_CLONE_TAGDUMP=./clone.apetag
 readonly BIN1=./test.sh
 readonly BIN2=./COPYING
 readonly BIN3=./README.md
@@ -16,7 +15,6 @@ COUNTER=0
 
 cleanup() {
     rm -f ${MP3_CLONE}
-    rm -f ${MP3_CLONE_TAGDUMP}
 }
 trap cleanup EXIT
 
@@ -180,10 +178,8 @@ ${APETAG} -i ${MP3_CLONE} -m read
 
 newtest
 ${APETAG} -i ${MP3_CLONE} -m update -f "test.sh"=${BIN1} -p Title="--title2--" -r "testpage"="http://bo.gus/website/page.html"
-${APETAG} -i ${MP3_CLONE} -m read -file ${MP3_CLONE_TAGDUMP}
-${APETAG} -i ${MP3_CLONE} -m erase
 ${APETAG} -i ${MP3_CLONE} -m read
-${APETAG} -i ${MP3_CLONE} -m overwrite -file ${MP3_CLONE_TAGDUMP}
+${APETAG} -i ${MP3_CLONE} -m overwrite -file ${MP3}
 ${APETAG} -i ${MP3_CLONE} -m read
 
 
