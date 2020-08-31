@@ -405,6 +405,8 @@ LOCALFUN VOID WriteApeTag(fstream &input, const TAG *tag) {
   const UINT32 tag_offset =
       tag->TagOffset() == 0 ? tag->FileLength() : tag->TagOffset();
 
+  const UINT32 &flags = tag->Flags();
+
   input.seekp(tag_offset);
 
   // write header
@@ -414,9 +416,9 @@ LOCALFUN VOID WriteApeTag(fstream &input, const TAG *tag) {
             " target pos " + decstr(tag_offset) + "\n");
   }
 
-  WriteApeHeaderFooter(input, tag, tag->Flags() | APE_FLAG_IS_HEADER | APE_FLAG_HAVE_HEADER);
+  WriteApeHeaderFooter(input, tag, flags | APE_FLAG_IS_HEADER | APE_FLAG_HAVE_HEADER);
   WriteApeItems(input, tag);
-  WriteApeHeaderFooter(input, tag, tag->Flags() | APE_FLAG_HAVE_HEADER);
+  WriteApeHeaderFooter(input, tag, flags | APE_FLAG_HAVE_HEADER);
 }
 
 LOCALFUN VOID Truncate(fstream &input, const TAG *tag,
