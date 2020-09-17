@@ -733,16 +733,14 @@ void HandleModeRead(TAG *tag) {
     if (items.count(key)) {
       const string &value = items[key];
 
-      fstream file;
-      file.open(val, ios_base::out | ios_base::in);
-
-      if (file.is_open())
+      if (ifstream(val.c_str()).good()) {
         Error("output file exists: " + val + "\n");
+      }
 
-      file.open(val, ios_base::out);
+      ofstream file(val.c_str());
 
-      if (file.is_open())
-        cout << "Writing " + val + "\n";
+      if (!file.is_open())
+        Error("could not open file: " + val + "\n");
 
       UINT32 pos = value.find('\0') + 1;
       file << value.substr(pos);
@@ -794,8 +792,7 @@ void HandleModeUpdate(TAG *tag) {
     string val = pair.second;
 
     if (val.length()) {
-      fstream file;
-      file.open(val, ios_base::in);
+      ifstream file(val.c_str());
 
       if (!file.is_open())
         Error("could not open file: " + val + "\n");
@@ -870,8 +867,8 @@ void HandleTagImport (fstream &input, TAG *tag) {
   const string &infile = SwitchFile.ValueString();
   fstream in(infile.c_str(), ios_base::in);
 
-  if (!in)
-    Error("could not open file\n");
+  if (!in.is_open())
+    Error("could not open file: " + infile + "\n");
 
   TAG *intag = ReadAndProcessApeHeader(in);
 
