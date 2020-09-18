@@ -20,11 +20,9 @@ Found APE tag at offset 193
 Items:
 TXT "Year" "--year2--" RW
 TXT "Title" "--title2--" RW
-W: truncating file from 431 to 409
 Found APE tag at offset 193
 Items:
 TXT "Title" "--title3--" RW
-W: truncating file from 409 to 321
 No valid APE tag found
 ============================================================
 test 4
@@ -34,14 +32,12 @@ Items:
 TXT "Year" "--year2--" RW
 TXT "Title" "--title2--" RO
 W: read only item with key Title was not erased
-W: truncating file from 431 to 409
 Found APE tag at offset 193
 Items:
 TXT "Title" "--title2--" RO
 Found APE tag at offset 193
 Items:
 TXT "Title" "--title2--" RW
-W: truncating file from 409 to 385
 Found APE tag at offset 193
 Items:
 ============================================================
@@ -50,7 +46,6 @@ Found APE tag at offset 193
 Items:
 TXT "Year" "--year2--" RW
 TXT "Title" "--title2--" RW
-W: truncating file from 431 to 409
 Found APE tag at offset 193
 Items:
 TXT "Title" "--title3--" RW
@@ -73,11 +68,9 @@ Found APE tag at offset 193
 Items:
 BIN "NotTest" RW
 BIN "Test.sh" RW
-W: truncating file from 70713 to 1502
 Found APE tag at offset 193
 Items:
 BIN "Test.sh" RW
-W: truncating file from 1502 to 321
 No valid APE tag found
 ============================================================
 test 8
@@ -87,14 +80,12 @@ Items:
 BIN "NotTest" RW
 BIN "Test.sh" RO
 W: read only item with key Test.sh was not erased
-W: truncating file from 70713 to 35549
 Found APE tag at offset 193
 Items:
 BIN "Test.sh" RO
 Found APE tag at offset 193
 Items:
 BIN "Test.sh" RW
-W: truncating file from 35549 to 385
 Found APE tag at offset 193
 Items:
 ============================================================
@@ -103,7 +94,6 @@ Found APE tag at offset 193
 Items:
 BIN "NotTest" RW
 BIN "Test.sh" RW
-W: truncating file from 70713 to 1502
 Found APE tag at offset 193
 Items:
 BIN "Test.sh" RW
@@ -126,11 +116,9 @@ Found APE tag at offset 193
 Items:
 RSC "ExternalCover" "/dev/zero" RW
 RSC "TestPage" "http://bo.gus/website/page.html" RW
-W: truncating file from 464 to 434
 Found APE tag at offset 193
 Items:
 RSC "TestPage" "http://bo.gus/addr/testpage.html" RW
-W: truncating file from 434 to 321
 No valid APE tag found
 ============================================================
 test 12
@@ -140,14 +128,12 @@ Items:
 RSC "ExternalCover" "/dev/zero" RW
 RSC "TestPage" "http://bo.gus/website/page.html" RO
 W: read only item with key TestPage was not erased
-W: truncating file from 464 to 433
 Found APE tag at offset 193
 Items:
 RSC "TestPage" "http://bo.gus/website/page.html" RO
 Found APE tag at offset 193
 Items:
 RSC "TestPage" "http://bo.gus/website/page.html" RW
-W: truncating file from 433 to 385
 Found APE tag at offset 193
 Items:
 ============================================================
@@ -156,7 +142,6 @@ Found APE tag at offset 193
 Items:
 RSC "ExternalCover" "/dev/zero" RW
 RSC "TestPage" "http://bo.gus/website/page.html" RW
-W: truncating file from 464 to 434
 Found APE tag at offset 193
 Items:
 RSC "TestPage" "http://bo.gus/addr/testpage.html" RW
@@ -217,7 +202,6 @@ Items:
 TXT "Title" "--title2--" RW
 RSC "testpage" "http://bo.gus/website/page.html" RW
 BIN "test.sh" RW
-W: truncating file from 6522 to 385
 Found APE tag at offset 193
 Items:
 done

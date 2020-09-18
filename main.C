@@ -426,7 +426,7 @@ LOCALFUN VOID Truncate(fstream &input, const TAG *tag,
   UINT32 pos = input.tellp();
 
   if (pos < tag->FileLength()) {
-    Warning("truncating file from " + decstr(tag->FileLength()) + " to " +
+    Info("truncating file from " + decstr(tag->FileLength()) + " to " +
             decstr(pos) + "\n");
     int result = truncate(filename.c_str(), pos);
     if (result) {
