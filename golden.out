@@ -1,10 +1,8 @@
 ============================================================
 test 1
-W: file does not contain ape tag
 No valid APE tag found
 ============================================================
 test 2
-W: file does not contain ape tag
 Found APE tag at offset 193
 Items:
 TXT "Title" "--title--" RW
@@ -18,7 +16,6 @@ Items:
 TXT "title" "--title--" RW
 ============================================================
 test 3
-W: file does not contain ape tag
 Found APE tag at offset 193
 Items:
 TXT "Year" "--year2--" RW
@@ -28,11 +25,9 @@ Found APE tag at offset 193
 Items:
 TXT "Title" "--title3--" RW
 W: truncating file from 409 to 321
-W: file does not contain ape tag
 No valid APE tag found
 ============================================================
 test 4
-W: file does not contain ape tag
 W: read only item with key Title was not modified
 Found APE tag at offset 193
 Items:
@@ -51,7 +46,6 @@ Found APE tag at offset 193
 Items:
 ============================================================
 test 5
-W: file does not contain ape tag
 Found APE tag at offset 193
 Items:
 TXT "Year" "--year2--" RW
@@ -62,7 +56,6 @@ Items:
 TXT "Title" "--title3--" RW
 ============================================================
 test 6
-W: file does not contain ape tag
 Found APE tag at offset 193
 Items:
 BIN "Test.sh" RW
@@ -76,7 +69,6 @@ Items:
 BIN "test.sh" RW
 ============================================================
 test 7
-W: file does not contain ape tag
 Found APE tag at offset 193
 Items:
 BIN "NotTest" RW
@@ -86,11 +78,9 @@ Found APE tag at offset 193
 Items:
 BIN "Test.sh" RW
 W: truncating file from 1502 to 321
-W: file does not contain ape tag
 No valid APE tag found
 ============================================================
 test 8
-W: file does not contain ape tag
 W: read only item with key Test.sh was not modified
 Found APE tag at offset 193
 Items:
@@ -109,7 +99,6 @@ Found APE tag at offset 193
 Items:
 ============================================================
 test 9
-W: file does not contain ape tag
 Found APE tag at offset 193
 Items:
 BIN "NotTest" RW
@@ -120,7 +109,6 @@ Items:
 BIN "Test.sh" RW
 ============================================================
 test 10
-W: file does not contain ape tag
 Found APE tag at offset 193
 Items:
 RSC "TestPage" "http://bo.gus/addr" RW
@@ -134,7 +122,6 @@ Items:
 RSC "testpage" "http://bo.gus/addr" RW
 ============================================================
 test 11
-W: file does not contain ape tag
 Found APE tag at offset 193
 Items:
 RSC "ExternalCover" "/dev/zero" RW
@@ -144,11 +131,9 @@ Found APE tag at offset 193
 Items:
 RSC "TestPage" "http://bo.gus/addr/testpage.html" RW
 W: truncating file from 434 to 321
-W: file does not contain ape tag
 No valid APE tag found
 ============================================================
 test 12
-W: file does not contain ape tag
 W: read only item with key TestPage was not modified
 Found APE tag at offset 193
 Items:
@@ -167,7 +152,6 @@ Found APE tag at offset 193
 Items:
 ============================================================
 test 13
-W: file does not contain ape tag
 Found APE tag at offset 193
 Items:
 RSC "ExternalCover" "/dev/zero" RW
@@ -178,7 +162,6 @@ Items:
 RSC "TestPage" "http://bo.gus/addr/testpage.html" RW
 ============================================================
 test 14
-W: file does not contain ape tag
 Found APE tag at offset 193
 Items:
 TXT "Test" "File" RW
@@ -191,7 +174,6 @@ RSC "externalcover" "/dev/zero" RW
 BIN "test.sh" RW
 ============================================================
 test 15
-W: file does not contain ape tag
 Found APE tag at offset 193
 Items:
 TXT "test" "file" RO
@@ -217,7 +199,6 @@ RSC "externalcover" "/DEV/ZERO" RW
 BIN "test.sh" RW
 ============================================================
 test 16
-W: file does not contain ape tag
 Found APE tag at offset 193
 TAG IS SET READ ONLY
 Items:
@@ -231,13 +212,11 @@ RSC "testpage" "http://bo.gus/website/page.html" RW
 BIN "test.sh" RW
 ============================================================
 test 17
-W: file does not contain ape tag
 Found APE tag at offset 193
 Items:
 TXT "Title" "--title2--" RW
 RSC "testpage" "http://bo.gus/website/page.html" RW
 BIN "test.sh" RW
-W: file does not contain ape tag
 W: truncating file from 6522 to 385
 Found APE tag at offset 193
 Items:

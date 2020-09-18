@@ -475,7 +475,7 @@ LOCALFUN TAG *ReadAndProcessApeHeader(fstream &input) {
   const string magic(ape._magic, 0, 8);
 
   if (magic != APE_MAGIC) {
-    Warning("file does not contain ape tag\n");
+    Info("file does not contain ape tag\n");
     return new TAG(file_length, file_length - offset, 0, 0);
   }
 
