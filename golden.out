@@ -125,7 +125,11 @@ test 12
 W: read only item with key TestPage was not modified
 Found APE tag at offset 193
 Items:
-RSC "ExternalCover" "/dev/zero" RW
+TXT "ExternalCover" "/dev/zero" RW
+RSC "TestPage" "http://bo.gus/website/page.html" RO
+W: read only item with key TestPage was not modified
+Found APE tag at offset 193
+Items:
 RSC "TestPage" "http://bo.gus/website/page.html" RO
 W: read only item with key TestPage was not erased
 Found APE tag at offset 193

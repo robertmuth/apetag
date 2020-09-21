@@ -231,7 +231,7 @@ public:
 
   // If an item key already exists and its new value is empty, we remove the
   // existing item.
-  VOID UpdateItem(const ITEM *newitem, const BOOL &force = false) {
+  VOID UpdateItem(const ITEM *newitem) {
     const string &newkey = newitem->Key();
     const string &newvalue = newitem->Value();
     const UINT32 &newflags = newitem->Flags();
@@ -240,11 +240,12 @@ public:
 
     if (item->Key().size()) {
       const string &key = item->Key();
+      const string &value = item->Value();
       const UINT32 &flags = item->Flags();
 
-      if (((flags & APE_FLAG_READONLY) == APE_FLAG_READONLY) && !force) {
-        Warning("read only item with key " + key + " was not " +
-                "modified\n");
+      if (((newvalue != value) && (newflags != flags)) && ((flags &
+          APE_FLAG_READONLY) == APE_FLAG_READONLY)) {
+        Warning("read only item with key " + key + " was not modified\n");
         return;
       }
 
@@ -822,7 +823,7 @@ void HandleModeUpdate(TAG *tag) {
     if (item->Value().size()) {
       UINT32 flags = item->Flags();
       flags &= ~APE_FLAG_READONLY;
-      tag->UpdateItem(new ITEM(item->Key(), item->Value(), flags), true);
+      tag->UpdateItem(new ITEM(item->Key(), item->Value(), flags));
     } else {
       Warning("item \"" + key + "\" not found\n");
     }

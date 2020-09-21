@@ -134,7 +134,9 @@ ${APETAG} -i ${MP3_CLONE} -m read
 newtest
 ${APETAG} -i ${MP3_CLONE} -m update -r "TestPage=http://bo.gus/website/page.html" -r "ExternalCover=/dev/zero"
 ${APETAG} -i ${MP3_CLONE} -m update -ro "TestPage"
-${APETAG} -i ${MP3_CLONE} -m update -r "TestPage=http://bo.gus/addr/testpage.html"
+${APETAG} -i ${MP3_CLONE} -m update -p "TestPage=http://bo.gus/addr/testpage.html" -p "ExternalCover=/dev/zero"
+${APETAG} -i ${MP3_CLONE} -m read
+${APETAG} -i ${MP3_CLONE} -m update -r "TestPage=http://bo.gus/addr/testpage.html" -r "ExternalCover="
 ${APETAG} -i ${MP3_CLONE} -m read
 ${APETAG} -i ${MP3_CLONE} -m overwrite
 ${APETAG} -i ${MP3_CLONE} -m read
