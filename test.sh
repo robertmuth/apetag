@@ -184,5 +184,9 @@ ${APETAG} -i ${MP3_CLONE} -m read
 ${APETAG} -i ${MP3_CLONE} -m overwrite -file ${MP3}
 ${APETAG} -i ${MP3_CLONE} -m read
 
+newtest
+${APETAG} -i ${MP3_CLONE} -m update -p "ID3"="--title--"
+${APETAG} -i ${MP3_CLONE} -m read
+
 
 echo "done"

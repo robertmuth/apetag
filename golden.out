@@ -208,4 +208,9 @@ RSC "testpage" "http://bo.gus/website/page.html" RW
 BIN "test.sh" RW
 Found APE tag at offset 193
 Items:
+============================================================
+test 18
+W: key "ID3" is not allowed
+Found APE tag at offset 193
+Items:
 done
