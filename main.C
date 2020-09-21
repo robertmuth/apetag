@@ -754,10 +754,28 @@ void HandleModeRead(TAG *tag) {
 }
 
 void HandleModeUpdate(TAG *tag) {
-  const UINT32 num_items = SwitchPair.ValueNumber();
+  const UINT32 num_rw_items = SwitchRw.ValueNumber();
 
   // we skip the first entry
-  for (UINT32 i = 1; i < num_items; i++) {
+  for (UINT32 i = 1; i < num_rw_items; i++) {
+    const string &key = SwitchRw.ValueString(i);
+
+    Debug("setting (" + key + ") read write\n");
+
+    const ITEM *item = tag->FindItem(key);
+    if (item->Value().size()) {
+      UINT32 flags = item->Flags();
+      flags &= ~APE_FLAG_READONLY;
+      tag->UpdateItem(new ITEM(item->Key(), item->Value(), flags));
+    } else {
+      Warning("item \"" + key + "\" not found\n");
+    }
+  }
+
+  const UINT32 num_utf8_items = SwitchPair.ValueNumber();
+
+  // we skip the first entry
+  for (UINT32 i = 1; i < num_utf8_items; i++) {
     const pair<string, string> pair = ParsedPair(SwitchPair.ValueString(i));
 
     const string &key = pair.first;
@@ -809,24 +827,6 @@ void HandleModeUpdate(TAG *tag) {
     Debug("adding (" + key + "," + " <Embedded Binary>)\n");
 
     tag->UpdateItem(new ITEM(key, val, APE_TAG_ITEM_FLAG_BINARY));
-  }
-
-  const UINT32 num_rw_items = SwitchRw.ValueNumber();
-
-  // we skip the first entry
-  for (UINT32 i = 1; i < num_rw_items; i++) {
-    const string &key = SwitchRw.ValueString(i);
-
-    Debug("setting (" + key + ") read write\n");
-
-    const ITEM *item = tag->FindItem(key);
-    if (item->Value().size()) {
-      UINT32 flags = item->Flags();
-      flags &= ~APE_FLAG_READONLY;
-      tag->UpdateItem(new ITEM(item->Key(), item->Value(), flags));
-    } else {
-      Warning("item \"" + key + "\" not found\n");
-    }
   }
 
   const UINT32 num_ro_items = SwitchRo.ValueNumber();
