@@ -236,6 +236,13 @@ public:
     const string &newvalue = newitem->Value();
     const UINT32 &newflags = newitem->Flags();
 
+    // The APEv2 specification does not allow the following for keys
+    if (newkey == "ID3" || newkey == "TAG" || newkey == "OggS" ||
+        newkey == "MP+") {
+      Warning("key \"" + newkey + "\" is not allowed\n");
+      return;
+    }
+
     const ITEM *item = FindItem(newkey);
 
     if (item->Key().size()) {
