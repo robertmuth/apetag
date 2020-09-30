@@ -723,7 +723,7 @@ void HandleModeRead(TAG *tag) {
 
   const UINT32 num_file_items = SwitchFilePair.ValueNumber();
 
-  // we skip the first entry
+  // there is no switch 0, start at switch 1
   for (UINT32 i = 1; i < num_file_items; i++) {
     const pair<string, string> pair =
         ParsedPair(SwitchFilePair.ValueString(i));
@@ -756,7 +756,7 @@ void HandleModeRead(TAG *tag) {
 void HandleModeUpdate(TAG *tag) {
   const UINT32 num_rw_items = SwitchRw.ValueNumber();
 
-  // we skip the first entry
+  // there is no switch 0, start at switch 1
   for (UINT32 i = 1; i < num_rw_items; i++) {
     const string &key = SwitchRw.ValueString(i);
 
@@ -774,7 +774,7 @@ void HandleModeUpdate(TAG *tag) {
 
   const UINT32 num_utf8_items = SwitchPair.ValueNumber();
 
-  // we skip the first entry
+  // there is no switch 0, start at switch 1
   for (UINT32 i = 1; i < num_utf8_items; i++) {
     const pair<string, string> pair = ParsedPair(SwitchPair.ValueString(i));
 
@@ -788,7 +788,7 @@ void HandleModeUpdate(TAG *tag) {
 
   const UINT32 num_resource_items = SwitchResourcePair.ValueNumber();
 
-  // we skip the first entry
+  // there is no switch 0, start at switch 1
   for (UINT32 i = 1; i < num_resource_items; i++) {
     const pair<string, string> pair =
         ParsedPair(SwitchResourcePair.ValueString(i));
@@ -803,7 +803,7 @@ void HandleModeUpdate(TAG *tag) {
 
   const UINT32 num_file_items = SwitchFilePair.ValueNumber();
 
-  // we skip the first entry
+  // there is no switch 0, start at switch 1
   for (UINT32 i = 1; i < num_file_items; i++) {
     pair<string, string> pair = ParsedPair(SwitchFilePair.ValueString(i));
 
@@ -831,7 +831,7 @@ void HandleModeUpdate(TAG *tag) {
 
   const UINT32 num_ro_items = SwitchRo.ValueNumber();
 
-  // we skip the first entry
+  // there is no switch 0, start at switch 1
   for (UINT32 i = 1; i < num_ro_items; i++) {
     const string &key = SwitchRo.ValueString(i);
 
