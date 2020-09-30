@@ -231,20 +231,28 @@ public:
 
   // If an item key already exists and its new value is empty, we remove the
   // existing item.
-  VOID UpdateItem(const ITEM *newitem, const BOOL &force = false) {
+  VOID UpdateItem(const ITEM *newitem) {
     const string &newkey = newitem->Key();
     const string &newvalue = newitem->Value();
     const UINT32 &newflags = newitem->Flags();
+
+    // The APEv2 specification does not allow the following for keys
+    if (newkey == "ID3" || newkey == "TAG" || newkey == "OggS" ||
+        newkey == "MP+") {
+      Warning("key \"" + newkey + "\" is not allowed\n");
+      return;
+    }
 
     const ITEM *item = FindItem(newkey);
 
     if (item->Key().size()) {
       const string &key = item->Key();
+      const string &value = item->Value();
       const UINT32 &flags = item->Flags();
 
-      if (((flags & APE_FLAG_READONLY) == APE_FLAG_READONLY) && !force) {
-        Warning("read only item with key " + key + " was not " +
-                "modified\n");
+      if (((newvalue != value) && (newflags != flags)) && ((flags &
+          APE_FLAG_READONLY) == APE_FLAG_READONLY)) {
+        Warning("read only item with key " + key + " was not modified\n");
         return;
       }
 
@@ -374,7 +382,9 @@ LOCALFUN VOID WriteApeItems(fstream &input, const TAG *tag) {
     const string &key = item->Key();
     const UINT32 key_length = key.length();
 
-    Info("writing item " + key + " " + value + " " + hexstr(flags) + "\n");
+    Info("writing item " + key + " " +
+         (flags == APE_TAG_ITEM_FLAG_BINARY ? "<Embedded Binary>" : value) +
+         " " + hexstr(flags) + "\n");
 
     WriteLittleEndianUint32(buf, value_length);
     input.write(buf, 4);
@@ -403,6 +413,8 @@ LOCALFUN VOID WriteApeTag(fstream &input, const TAG *tag) {
   const UINT32 tag_offset =
       tag->TagOffset() == 0 ? tag->FileLength() : tag->TagOffset();
 
+  const UINT32 &flags = tag->Flags();
+
   input.seekp(tag_offset);
 
   // write header
@@ -412,9 +424,9 @@ LOCALFUN VOID WriteApeTag(fstream &input, const TAG *tag) {
             " target pos " + decstr(tag_offset) + "\n");
   }
 
-  WriteApeHeaderFooter(input, tag, tag->Flags() | APE_FLAG_IS_HEADER | APE_FLAG_HAVE_HEADER);
+  WriteApeHeaderFooter(input, tag, flags | APE_FLAG_IS_HEADER | APE_FLAG_HAVE_HEADER);
   WriteApeItems(input, tag);
-  WriteApeHeaderFooter(input, tag, tag->Flags() | APE_FLAG_HAVE_HEADER);
+  WriteApeHeaderFooter(input, tag, flags | APE_FLAG_HAVE_HEADER);
 }
 
 LOCALFUN VOID Truncate(fstream &input, const TAG *tag,
@@ -422,7 +434,7 @@ LOCALFUN VOID Truncate(fstream &input, const TAG *tag,
   UINT32 pos = input.tellp();
 
   if (pos < tag->FileLength()) {
-    Warning("truncating file from " + decstr(tag->FileLength()) + " to " +
+    Info("truncating file from " + decstr(tag->FileLength()) + " to " +
             decstr(pos) + "\n");
     int result = truncate(filename.c_str(), pos);
     if (result) {
@@ -471,7 +483,7 @@ LOCALFUN TAG *ReadAndProcessApeHeader(fstream &input) {
   const string magic(ape._magic, 0, 8);
 
   if (magic != APE_MAGIC) {
-    Warning("file does not contain ape tag\n");
+    Info("file does not contain ape tag\n");
     return new TAG(file_length, file_length - offset, 0, 0);
   }
 
@@ -537,36 +549,38 @@ LOCALFUN TAG *ReadAndProcessApeHeader(fstream &input) {
 
   input.seekg(-(INT32)(length + offset), ios::end);
 
-  char *const buffer = new char[length];
+  INT32 items_length = length - sizeof(APE_HEADER_FOOTER);
 
-  input.read(buffer, length);
-
-  char *cp = buffer;
-
-  // FIXME: the following code needs buffer overun checks
+  const char *tag_items = new char[items_length];
+  input.read((char *)tag_items, items_length);
 
   for (UINT32 i = 0; i < items; i++) {
-    const UINT32 l = ReadLittleEndianUint32(cp);
-    cp += 4;
-    const UINT32 f = ReadLittleEndianUint32(cp);
-    cp += 4;
+    const UINT32 l = ReadLittleEndianUint32(tag_items);
+    tag_items += 4;
+    const UINT32 f = ReadLittleEndianUint32(tag_items);
+    tag_items += 4;
 
     UINT32 flags = f;
 
-    string key(cp);
+    string key(tag_items);
 
-    cp += 1 + key.length();
+    tag_items += 1 + key.length();
 
-    string value(l, ' ');
-    for (UINT32 p = 0; p < l; p++) {
-      value[p] = cp[p];
-    }
+    string value(tag_items, l);
 
-    cp += l;
+    tag_items += l;
 
     Info("tag " + decstr(i) + ":  len: " + decstr(l) + "  flags: " + hexstr(f) +
-         "  key: " + key + "  value: " + value + "\n");
+         "  key: " + key + " value: " +
+         (flags == APE_TAG_ITEM_FLAG_BINARY ? "<Embedded Binary>" : value) +
+         "\n");
     tag->UpdateItem(new ITEM(key, value, flags));
+
+    items_length -= 4 + 4 + 1 + key.length() + value.length();
+  }
+
+  if (items_length != 0) {
+    Warning("items size mismatch\n");
   }
 
   return tag;
@@ -605,7 +619,7 @@ SWITCH SwitchRw("rw", "general", SWITCH_TYPE_STRING, SWITCH_MODE_ACCUMULATE,
                   "$none$", "specify ape tag to set read write");
 
 SWITCH SwitchFile("file", "general", SWITCH_TYPE_STRING, SWITCH_MODE_OVERWRITE,
-                  "", "specify pathname for tagfile");
+                  "", "specify pathname for ape-tagged import file");
 
 // ========================================================================
 int Usage() {
@@ -616,18 +630,16 @@ Web: http://www.muth.org/Robert/Apetag
 
 Usage: apetag -i input-file -m mode  {[-p|-f|-r] tag=value}*
 Or: apetag -i input-file -m {update} {[-rw|-ro] tag}
-Or: apetag -i input-file -m {[read|overwrite]} {-file tagfile}
+Or: apetag -i input-file -m {overwrite} {-file import-file}
 
 change or create APE tag for file input-file
 
 apetag operates in one of three modes:
 Mode read (default):
-    read and dump APE tag if present
+    read APE tag if present
     extract an item to a file with the -f option
         e.g.: -f "Cover Art (front)"=cover.jpg
     extract item "Cover Art (front)" to file cover.jpg
-    dump the APE tag to a file with the -file option
-    e.g.: -file tagdump.apetag
 
 Mode update:
     change selected key,value pairs
@@ -700,7 +712,7 @@ void HandleModeRead(TAG *tag) {
 
     string dumpitem;
     if ((flags & APE_TAG_ITEM_FLAG_EXTERNAL_RESOURCE) == APE_TAG_ITEM_FLAG_EXTERNAL_RESOURCE) {
-        dumpitem = "ERS \"" + key + "\" \"" + value + "\"";
+        dumpitem = "RSC \"" + key + "\" \"" + value + "\"";
     } else if ((flags & APE_TAG_ITEM_FLAG_BINARY) == APE_TAG_ITEM_FLAG_BINARY) {
         dumpitem = "BIN \"" + key + "\"";
     } else if ((flags & APE_TAG_ITEM_FLAG_TEXT) == APE_TAG_ITEM_FLAG_TEXT) {
@@ -718,7 +730,7 @@ void HandleModeRead(TAG *tag) {
 
   const UINT32 num_file_items = SwitchFilePair.ValueNumber();
 
-  // we skip the first entry
+  // there is no switch 0, start at switch 1
   for (UINT32 i = 1; i < num_file_items; i++) {
     const pair<string, string> pair =
         ParsedPair(SwitchFilePair.ValueString(i));
@@ -729,16 +741,14 @@ void HandleModeRead(TAG *tag) {
     if (items.count(key)) {
       const string &value = items[key];
 
-      fstream file;
-      file.open(val, ios_base::out | ios_base::in);
-
-      if (file.is_open())
+      if (ifstream(val.c_str()).good()) {
         Error("output file exists: " + val + "\n");
+      }
 
-      file.open(val, ios_base::out);
+      ofstream file(val.c_str());
 
-      if (file.is_open())
-        cout << "Writing " + val + "\n";
+      if (!file.is_open())
+        Error("could not open file: " + val + "\n");
 
       UINT32 pos = value.find('\0') + 1;
       file << value.substr(pos);
@@ -751,10 +761,28 @@ void HandleModeRead(TAG *tag) {
 }
 
 void HandleModeUpdate(TAG *tag) {
-  const UINT32 num_items = SwitchPair.ValueNumber();
+  const UINT32 num_rw_items = SwitchRw.ValueNumber();
 
-  // we skip the first entry
-  for (UINT32 i = 1; i < num_items; i++) {
+  // there is no switch 0, start at switch 1
+  for (UINT32 i = 1; i < num_rw_items; i++) {
+    const string &key = SwitchRw.ValueString(i);
+
+    Debug("setting (" + key + ") read write\n");
+
+    const ITEM *item = tag->FindItem(key);
+    if (item->Value().size()) {
+      UINT32 flags = item->Flags();
+      flags &= ~APE_FLAG_READONLY;
+      tag->UpdateItem(new ITEM(item->Key(), item->Value(), flags));
+    } else {
+      Warning("item \"" + key + "\" not found\n");
+    }
+  }
+
+  const UINT32 num_utf8_items = SwitchPair.ValueNumber();
+
+  // there is no switch 0, start at switch 1
+  for (UINT32 i = 1; i < num_utf8_items; i++) {
     const pair<string, string> pair = ParsedPair(SwitchPair.ValueString(i));
 
     const string &key = pair.first;
@@ -767,7 +795,7 @@ void HandleModeUpdate(TAG *tag) {
 
   const UINT32 num_resource_items = SwitchResourcePair.ValueNumber();
 
-  // we skip the first entry
+  // there is no switch 0, start at switch 1
   for (UINT32 i = 1; i < num_resource_items; i++) {
     const pair<string, string> pair =
         ParsedPair(SwitchResourcePair.ValueString(i));
@@ -782,7 +810,7 @@ void HandleModeUpdate(TAG *tag) {
 
   const UINT32 num_file_items = SwitchFilePair.ValueNumber();
 
-  // we skip the first entry
+  // there is no switch 0, start at switch 1
   for (UINT32 i = 1; i < num_file_items; i++) {
     pair<string, string> pair = ParsedPair(SwitchFilePair.ValueString(i));
 
@@ -790,8 +818,7 @@ void HandleModeUpdate(TAG *tag) {
     string val = pair.second;
 
     if (val.length()) {
-      fstream file;
-      file.open(val, ios_base::in);
+      ifstream file(val.c_str());
 
       if (!file.is_open())
         Error("could not open file: " + val + "\n");
@@ -804,32 +831,14 @@ void HandleModeUpdate(TAG *tag) {
       file.close();
     }
 
-    Debug("adding (" + key + "," + " <Binary>)\n");
+    Debug("adding (" + key + "," + " <Embedded Binary>)\n");
 
     tag->UpdateItem(new ITEM(key, val, APE_TAG_ITEM_FLAG_BINARY));
   }
 
-  const UINT32 num_rw_items = SwitchRw.ValueNumber();
-
-  // we skip the first entry
-  for (UINT32 i = 1; i < num_rw_items; i++) {
-    const string &key = SwitchRw.ValueString(i);
-
-    Debug("setting (" + key + ") read write\n");
-
-    const ITEM *item = tag->FindItem(key);
-    if (item->Value().size()) {
-      UINT32 flags = item->Flags();
-      flags &= ~APE_FLAG_READONLY;
-      tag->UpdateItem(new ITEM(item->Key(), item->Value(), flags), true);
-    } else {
-      Warning("item \"" + key + "\" not found\n");
-    }
-  }
-
   const UINT32 num_ro_items = SwitchRo.ValueNumber();
 
-  // we skip the first entry
+  // there is no switch 0, start at switch 1
   for (UINT32 i = 1; i < num_ro_items; i++) {
     const string &key = SwitchRo.ValueString(i);
 
@@ -866,8 +875,11 @@ void HandleTagImport (fstream &input, TAG *tag) {
   const string &infile = SwitchFile.ValueString();
   fstream in(infile.c_str(), ios_base::in);
 
-  if (!in)
-    Error("could not open file\n");
+  if (!in.is_open()) {
+    Error("could not open file: " + infile + "\n");
+  } else {
+    Info("successfully opened file " + infile + "\n");
+  }
 
   TAG *intag = ReadAndProcessApeHeader(in);
 
@@ -881,26 +893,6 @@ void HandleTagImport (fstream &input, TAG *tag) {
   }
 
   WriteApeTag(input, offsettag);
-}
-
-void HandleTagExport (TAG *tag) {
-  const string &outfile = SwitchFile.ValueString();
-
-  if (ifstream(outfile.c_str()).good()) {
-    Error("output file exists: " + outfile + "\n");
-  }
-
-  TAG *outtag = new TAG(0, 0, tag->ItemCount(), tag->Flags());
-
-  ITEM_SET::const_iterator it = tag->Items().begin();
-  while (it != tag->Items().end()) {
-    outtag->UpdateItem(*it);
-    ++it;
-  }
-
-  fstream of(outfile.c_str(), ios_base::out);
-
-  WriteApeTag(of, outtag);
 }
 
 // ========================================================================
@@ -949,8 +941,11 @@ int main(int argc, char *argv[]) {
 
   fstream input(filename.c_str(),
                 change_file ? (ios_base::in | ios_base::out) : ios_base::in);
-  if (!input)
+  if (!input) {
     Error("could not open file\n");
+  } else {
+    Info("successfully opened file " + filename + "\n");
+  }
 
   unique_ptr<TAG> tag(ReadAndProcessApeHeader(input));
 
@@ -971,11 +966,7 @@ int main(int argc, char *argv[]) {
     if (!has_apetag) {
       cout << "No valid APE tag found\n";
     } else {
-      if (SwitchFile.ValueString().size()) {
-        HandleTagExport(tag.get());
-      } else {
-        HandleModeRead(tag.get());
-      }
+      HandleModeRead(tag.get());
     }
   } else if (mode == "update") {
     if ((tag->Flags() & APE_FLAG_READONLY) == APE_FLAG_READONLY) {
