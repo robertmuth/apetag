@@ -867,8 +867,11 @@ void HandleTagImport (fstream &input, TAG *tag) {
   const string &infile = SwitchFile.ValueString();
   fstream in(infile.c_str(), ios_base::in);
 
-  if (!in.is_open())
+  if (!in.is_open()) {
     Error("could not open file: " + infile + "\n");
+  } else {
+    Info("successfully opened file " + infile + "\n");
+  }
 
   TAG *intag = ReadAndProcessApeHeader(in);
 
@@ -930,8 +933,11 @@ int main(int argc, char *argv[]) {
 
   fstream input(filename.c_str(),
                 change_file ? (ios_base::in | ios_base::out) : ios_base::in);
-  if (!input)
+  if (!input) {
     Error("could not open file\n");
+  } else {
+    Info("successfully opened file " + filename + "\n");
+  }
 
   unique_ptr<TAG> tag(ReadAndProcessApeHeader(input));
 
