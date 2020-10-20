@@ -693,6 +693,16 @@ BOOL ValidKey (const string &key) {
       return false;
     }
 
+    // The APEv2 specification requires that keys consist only of ASCII
+    // printable characters
+    for (string::const_iterator it = key.cbegin(); it != key.cend(); ++it) {
+        if (((UINT32)*it < 32) || ((UINT32)*it > 126)) {
+            Warning("key \"" + key +
+                    "\" contains a non-printable ASCII character\n");
+            return false;
+        }
+    }
+
     return true;
 }
 
