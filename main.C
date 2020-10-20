@@ -700,6 +700,7 @@ void HandleModeRead(TAG *tag) {
     cout << "TAG IS SET READ ONLY\n";
   }
   cout << "Items:\n";
+  cout << "Type\tRO/RW\tField\tValue\n";
   for (ITEM_SET::const_iterator it = tag->Items().begin();
        it != tag->Items().end(); ++it) {
     const ITEM *item = *it;
@@ -711,18 +712,22 @@ void HandleModeRead(TAG *tag) {
     items[key] = value;
 
     string dumpitem;
-    if ((flags & APE_TAG_ITEM_FLAG_EXTERNAL_RESOURCE) == APE_TAG_ITEM_FLAG_EXTERNAL_RESOURCE) {
-        dumpitem = "RSC \"" + key + "\" \"" + value + "\"";
-    } else if ((flags & APE_TAG_ITEM_FLAG_BINARY) == APE_TAG_ITEM_FLAG_BINARY) {
-        dumpitem = "BIN \"" + key + "\"";
-    } else if ((flags & APE_TAG_ITEM_FLAG_TEXT) == APE_TAG_ITEM_FLAG_TEXT) {
-        dumpitem = "TXT \"" + key + "\" \"" + value + "\"";
+    string lockflag;
+    if ((~flags & APE_FLAG_READONLY) == APE_FLAG_READONLY) {
+      lockflag = "RW\t";
+    } else {
+      lockflag = "RO\t";
     }
 
-    if ((~flags & APE_FLAG_READONLY) == APE_FLAG_READONLY) {
-      dumpitem += " RW";
-    } else {
-      dumpitem += " RO";
+    if ((flags & APE_TAG_ITEM_FLAG_EXTERNAL_RESOURCE) == APE_TAG_ITEM_FLAG_EXTERNAL_RESOURCE) {
+        dumpitem += "RSC\t" + lockflag;
+        dumpitem += key + "\t" + value;
+    } else if ((flags & APE_TAG_ITEM_FLAG_BINARY) == APE_TAG_ITEM_FLAG_BINARY) {
+        dumpitem += "BIN\t" + lockflag;
+        dumpitem += key;
+    } else if ((flags & APE_TAG_ITEM_FLAG_TEXT) == APE_TAG_ITEM_FLAG_TEXT) {
+        dumpitem += "TXT\t" + lockflag;
+        dumpitem += key + "\t" + value;
     }
 
     cout << dumpitem + "\n";

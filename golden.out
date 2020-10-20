@@ -5,212 +5,257 @@ No valid APE tag found
 test 2
 Found APE tag at offset 193
 Items:
-TXT "Title" "--title--" RW
+Type	RO/RW	Field	Value
+TXT	RW	Title	--title--
 Found APE tag at offset 193
 Items:
-TXT "title" "--title--" RW
+Type	RO/RW	Field	Value
+TXT	RW	title	--title--
 W: item "titl" not found
 W: item "titl" not found
 Found APE tag at offset 193
 Items:
-TXT "title" "--title--" RW
+Type	RO/RW	Field	Value
+TXT	RW	title	--title--
 ============================================================
 test 3
 Found APE tag at offset 193
 Items:
-TXT "Year" "--year2--" RW
-TXT "Title" "--title2--" RW
+Type	RO/RW	Field	Value
+TXT	RW	Year	--year2--
+TXT	RW	Title	--title2--
 Found APE tag at offset 193
 Items:
-TXT "Title" "--title3--" RW
+Type	RO/RW	Field	Value
+TXT	RW	Title	--title3--
 No valid APE tag found
 ============================================================
 test 4
 W: read only item with key Title was not modified
 Found APE tag at offset 193
 Items:
-TXT "Year" "--year2--" RW
-TXT "Title" "--title2--" RO
+Type	RO/RW	Field	Value
+TXT	RW	Year	--year2--
+TXT	RO	Title	--title2--
 W: read only item with key Title was not erased
 Found APE tag at offset 193
 Items:
-TXT "Title" "--title2--" RO
+Type	RO/RW	Field	Value
+TXT	RO	Title	--title2--
 Found APE tag at offset 193
 Items:
-TXT "Title" "--title2--" RW
+Type	RO/RW	Field	Value
+TXT	RW	Title	--title2--
 Found APE tag at offset 193
 Items:
+Type	RO/RW	Field	Value
 ============================================================
 test 5
 Found APE tag at offset 193
 Items:
-TXT "Year" "--year2--" RW
-TXT "Title" "--title2--" RW
+Type	RO/RW	Field	Value
+TXT	RW	Year	--year2--
+TXT	RW	Title	--title2--
 Found APE tag at offset 193
 Items:
-TXT "Title" "--title3--" RW
+Type	RO/RW	Field	Value
+TXT	RW	Title	--title3--
 ============================================================
 test 6
 Found APE tag at offset 193
 Items:
-BIN "Test.sh" RW
+Type	RO/RW	Field	Value
+BIN	RW	Test.sh
 Found APE tag at offset 193
 Items:
-BIN "test.sh" RW
+Type	RO/RW	Field	Value
+BIN	RW	test.sh
 W: item "test" not found
 W: item "test" not found
 Found APE tag at offset 193
 Items:
-BIN "test.sh" RW
+Type	RO/RW	Field	Value
+BIN	RW	test.sh
 ============================================================
 test 7
 Found APE tag at offset 193
 Items:
-BIN "NotTest" RW
-BIN "Test.sh" RW
+Type	RO/RW	Field	Value
+BIN	RW	NotTest
+BIN	RW	Test.sh
 Found APE tag at offset 193
 Items:
-BIN "Test.sh" RW
+Type	RO/RW	Field	Value
+BIN	RW	Test.sh
 No valid APE tag found
 ============================================================
 test 8
 W: read only item with key Test.sh was not modified
 Found APE tag at offset 193
 Items:
-BIN "NotTest" RW
-BIN "Test.sh" RO
+Type	RO/RW	Field	Value
+BIN	RW	NotTest
+BIN	RO	Test.sh
 W: read only item with key Test.sh was not erased
 Found APE tag at offset 193
 Items:
-BIN "Test.sh" RO
+Type	RO/RW	Field	Value
+BIN	RO	Test.sh
 Found APE tag at offset 193
 Items:
-BIN "Test.sh" RW
+Type	RO/RW	Field	Value
+BIN	RW	Test.sh
 Found APE tag at offset 193
 Items:
+Type	RO/RW	Field	Value
 ============================================================
 test 9
 Found APE tag at offset 193
 Items:
-BIN "NotTest" RW
-BIN "Test.sh" RW
+Type	RO/RW	Field	Value
+BIN	RW	NotTest
+BIN	RW	Test.sh
 Found APE tag at offset 193
 Items:
-BIN "Test.sh" RW
+Type	RO/RW	Field	Value
+BIN	RW	Test.sh
 ============================================================
 test 10
 Found APE tag at offset 193
 Items:
-RSC "TestPage" "http://bo.gus/addr" RW
+Type	RO/RW	Field	Value
+RSC	RW	TestPage	http://bo.gus/addr
 Found APE tag at offset 193
 Items:
-RSC "testpage" "http://bo.gus/addr" RW
+Type	RO/RW	Field	Value
+RSC	RW	testpage	http://bo.gus/addr
 W: item "page" not found
 W: item "page" not found
 Found APE tag at offset 193
 Items:
-RSC "testpage" "http://bo.gus/addr" RW
+Type	RO/RW	Field	Value
+RSC	RW	testpage	http://bo.gus/addr
 ============================================================
 test 11
 Found APE tag at offset 193
 Items:
-RSC "ExternalCover" "/dev/zero" RW
-RSC "TestPage" "http://bo.gus/website/page.html" RW
+Type	RO/RW	Field	Value
+RSC	RW	ExternalCover	/dev/zero
+RSC	RW	TestPage	http://bo.gus/website/page.html
 Found APE tag at offset 193
 Items:
-RSC "TestPage" "http://bo.gus/addr/testpage.html" RW
+Type	RO/RW	Field	Value
+RSC	RW	TestPage	http://bo.gus/addr/testpage.html
 No valid APE tag found
 ============================================================
 test 12
 W: read only item with key TestPage was not modified
 Found APE tag at offset 193
 Items:
-TXT "ExternalCover" "/dev/zero" RW
-RSC "TestPage" "http://bo.gus/website/page.html" RO
+Type	RO/RW	Field	Value
+TXT	RW	ExternalCover	/dev/zero
+RSC	RO	TestPage	http://bo.gus/website/page.html
 W: read only item with key TestPage was not modified
 Found APE tag at offset 193
 Items:
-RSC "TestPage" "http://bo.gus/website/page.html" RO
+Type	RO/RW	Field	Value
+RSC	RO	TestPage	http://bo.gus/website/page.html
 W: read only item with key TestPage was not erased
 Found APE tag at offset 193
 Items:
-RSC "TestPage" "http://bo.gus/website/page.html" RO
+Type	RO/RW	Field	Value
+RSC	RO	TestPage	http://bo.gus/website/page.html
 Found APE tag at offset 193
 Items:
-RSC "TestPage" "http://bo.gus/website/page.html" RW
+Type	RO/RW	Field	Value
+RSC	RW	TestPage	http://bo.gus/website/page.html
 Found APE tag at offset 193
 Items:
+Type	RO/RW	Field	Value
 ============================================================
 test 13
 Found APE tag at offset 193
 Items:
-RSC "ExternalCover" "/dev/zero" RW
-RSC "TestPage" "http://bo.gus/website/page.html" RW
+Type	RO/RW	Field	Value
+RSC	RW	ExternalCover	/dev/zero
+RSC	RW	TestPage	http://bo.gus/website/page.html
 Found APE tag at offset 193
 Items:
-RSC "TestPage" "http://bo.gus/addr/testpage.html" RW
+Type	RO/RW	Field	Value
+RSC	RW	TestPage	http://bo.gus/addr/testpage.html
 ============================================================
 test 14
 Found APE tag at offset 193
 Items:
-TXT "Test" "File" RW
-RSC "ExternalCover" "/dev/zero" RW
-BIN "Test.sh" RW
+Type	RO/RW	Field	Value
+TXT	RW	Test	File
+RSC	RW	ExternalCover	/dev/zero
+BIN	RW	Test.sh
 Found APE tag at offset 193
 Items:
-TXT "test" "File" RW
-RSC "externalcover" "/dev/zero" RW
-BIN "test.sh" RW
+Type	RO/RW	Field	Value
+TXT	RW	test	File
+RSC	RW	externalcover	/dev/zero
+BIN	RW	test.sh
 ============================================================
 test 15
 Found APE tag at offset 193
 Items:
-TXT "test" "file" RO
-RSC "externalcover" "/dev/zero" RO
-BIN "test.sh" RO
+Type	RO/RW	Field	Value
+TXT	RO	test	file
+RSC	RO	externalcover	/dev/zero
+BIN	RO	test.sh
 W: read only item with key test was not modified
 W: read only item with key externalcover was not modified
 W: read only item with key test.sh was not modified
 Found APE tag at offset 193
 Items:
-TXT "test" "file" RO
-RSC "externalcover" "/dev/zero" RO
-BIN "test.sh" RO
+Type	RO/RW	Field	Value
+TXT	RO	test	file
+RSC	RO	externalcover	/dev/zero
+BIN	RO	test.sh
 Found APE tag at offset 193
 Items:
-TXT "test" "file" RW
-RSC "externalcover" "/dev/zero" RW
-BIN "test.sh" RW
+Type	RO/RW	Field	Value
+TXT	RW	test	file
+RSC	RW	externalcover	/dev/zero
+BIN	RW	test.sh
 Found APE tag at offset 193
 Items:
-TXT "test" "FILE2" RW
-RSC "externalcover" "/DEV/ZERO" RW
-BIN "test.sh" RW
+Type	RO/RW	Field	Value
+TXT	RW	test	FILE2
+RSC	RW	externalcover	/DEV/ZERO
+BIN	RW	test.sh
 ============================================================
 test 16
 Found APE tag at offset 193
 TAG IS SET READ ONLY
 Items:
-TXT "Title" "--title2--" RW
-RSC "testpage" "http://bo.gus/website/page.html" RW
-BIN "test.sh" RW
+Type	RO/RW	Field	Value
+TXT	RW	Title	--title2--
+RSC	RW	testpage	http://bo.gus/website/page.html
+BIN	RW	test.sh
 Found APE tag at offset 193
 Items:
-TXT "Title" "--title2--" RW
-RSC "testpage" "http://bo.gus/website/page.html" RW
-BIN "test.sh" RW
+Type	RO/RW	Field	Value
+TXT	RW	Title	--title2--
+RSC	RW	testpage	http://bo.gus/website/page.html
+BIN	RW	test.sh
 ============================================================
 test 17
 Found APE tag at offset 193
 Items:
-TXT "Title" "--title2--" RW
-RSC "testpage" "http://bo.gus/website/page.html" RW
-BIN "test.sh" RW
+Type	RO/RW	Field	Value
+TXT	RW	Title	--title2--
+RSC	RW	testpage	http://bo.gus/website/page.html
+BIN	RW	test.sh
 Found APE tag at offset 193
 Items:
+Type	RO/RW	Field	Value
 ============================================================
 test 18
 W: key "ID3" is not allowed
 Found APE tag at offset 193
 Items:
+Type	RO/RW	Field	Value
 done
