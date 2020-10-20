@@ -665,7 +665,7 @@ Switch summary:
   return -1;
 }
 
-const pair<string, string> ParsedPair (const string &pair) {
+const pair<string, string> ParsedPair(const string &pair) {
   const UINT32 len = pair.length();
 
   UINT32 pos_equal_sign;
@@ -685,7 +685,7 @@ const pair<string, string> ParsedPair (const string &pair) {
   return make_pair(key, val);
 }
 
-BOOL ValidKey (const string &key) {
+BOOL ValidKey(const string &key) {
     // The APEv2 specification does not allow the following for keys
     if (key == "ID3" || key == "TAG" || key == "OggS" ||
         key == "MP+") {
@@ -905,7 +905,7 @@ void HandleRoRw(TAG *tag, const BOOL &ro) {
   }
 }
 
-void HandleTagImport (fstream &input, TAG *tag) {
+void HandleTagImport(fstream &input, TAG *tag) {
   const string &infile = SwitchFile.ValueString();
   fstream in(infile.c_str(), ios_base::in);
 
