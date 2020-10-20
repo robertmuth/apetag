@@ -236,13 +236,6 @@ public:
     const string &newvalue = newitem->Value();
     const UINT32 &newflags = newitem->Flags();
 
-    // The APEv2 specification does not allow the following for keys
-    if (newkey == "ID3" || newkey == "TAG" || newkey == "OggS" ||
-        newkey == "MP+") {
-      Warning("key \"" + newkey + "\" is not allowed\n");
-      return;
-    }
-
     const ITEM *item = FindItem(newkey);
 
     if (item->Key().size()) {
@@ -692,6 +685,17 @@ const pair<string, string> ParsedPair (const string &pair) {
   return make_pair(key, val);
 }
 
+BOOL ValidKey (const string &key) {
+    // The APEv2 specification does not allow the following for keys
+    if (key == "ID3" || key == "TAG" || key == "OggS" ||
+        key == "MP+") {
+      Warning("key \"" + key + "\" is not an allowed key\n");
+      return false;
+    }
+
+    return true;
+}
+
 void HandleModeRead(TAG *tag) {
   map<string, string> items;
 
@@ -793,6 +797,11 @@ void HandleModeUpdate(TAG *tag) {
     const string &key = pair.first;
     const string &val = pair.second;
 
+    if (!ValidKey(key)) {
+        Warning("skipping invalid key \"" + key + "\"\n");
+        continue;
+    }
+
     Debug("adding (" + key + "," + val + ")\n");
 
     tag->UpdateItem(new ITEM(key, val, APE_TAG_ITEM_FLAG_TEXT));
@@ -808,6 +817,11 @@ void HandleModeUpdate(TAG *tag) {
     const string &key = pair.first;
     const string &val = pair.second;
 
+    if (!ValidKey(key)) {
+        Warning("skipping invalid key \"" + key + "\"\n");
+        continue;
+    }
+
     Debug("adding (" + key + "," + val + ")\n");
 
     tag->UpdateItem(new ITEM(key, val, APE_TAG_ITEM_FLAG_EXTERNAL_RESOURCE));
@@ -821,6 +835,11 @@ void HandleModeUpdate(TAG *tag) {
 
     const string &key = pair.first;
     string val = pair.second;
+
+    if (!ValidKey(key)) {
+        Warning("skipping invalid key \"" + key + "\"\n");
+        continue;
+    }
 
     if (val.length()) {
       ifstream file(val.c_str());
