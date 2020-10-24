@@ -236,13 +236,6 @@ public:
     const string &newvalue = newitem->Value();
     const UINT32 &newflags = newitem->Flags();
 
-    // The APEv2 specification does not allow the following for keys
-    if (newkey == "ID3" || newkey == "TAG" || newkey == "OggS" ||
-        newkey == "MP+") {
-      Warning("key \"" + newkey + "\" is not allowed\n");
-      return;
-    }
-
     const ITEM *item = FindItem(newkey);
 
     if (item->Key().size()) {
@@ -672,7 +665,7 @@ Switch summary:
   return -1;
 }
 
-const pair<string, string> ParsedPair (const string &pair) {
+const pair<string, string> ParsedPair(const string &pair) {
   const UINT32 len = pair.length();
 
   UINT32 pos_equal_sign;
@@ -690,6 +683,27 @@ const pair<string, string> ParsedPair (const string &pair) {
   const string val = pair.substr(pos_equal_sign, len - pos_equal_sign);
 
   return make_pair(key, val);
+}
+
+BOOL ValidKey(const string &key) {
+    // The APEv2 specification does not allow the following for keys
+    if (key == "ID3" || key == "TAG" || key == "OggS" ||
+        key == "MP+") {
+      Warning("key \"" + key + "\" is not an allowed key\n");
+      return false;
+    }
+
+    // The APEv2 specification requires that keys consist only of ASCII
+    // printable characters
+    for (string::const_iterator it = key.cbegin(); it != key.cend(); ++it) {
+        if (((UINT32)*it < 32) || ((UINT32)*it > 126)) {
+            Warning("key \"" + key +
+                    "\" contains a non-printable ASCII character\n");
+            return false;
+        }
+    }
+
+    return true;
 }
 
 void HandleModeRead(TAG *tag) {
@@ -793,6 +807,11 @@ void HandleModeUpdate(TAG *tag) {
     const string &key = pair.first;
     const string &val = pair.second;
 
+    if (!ValidKey(key)) {
+        Warning("skipping invalid key \"" + key + "\"\n");
+        continue;
+    }
+
     Debug("adding (" + key + "," + val + ")\n");
 
     tag->UpdateItem(new ITEM(key, val, APE_TAG_ITEM_FLAG_TEXT));
@@ -808,6 +827,11 @@ void HandleModeUpdate(TAG *tag) {
     const string &key = pair.first;
     const string &val = pair.second;
 
+    if (!ValidKey(key)) {
+        Warning("skipping invalid key \"" + key + "\"\n");
+        continue;
+    }
+
     Debug("adding (" + key + "," + val + ")\n");
 
     tag->UpdateItem(new ITEM(key, val, APE_TAG_ITEM_FLAG_EXTERNAL_RESOURCE));
@@ -821,6 +845,11 @@ void HandleModeUpdate(TAG *tag) {
 
     const string &key = pair.first;
     string val = pair.second;
+
+    if (!ValidKey(key)) {
+        Warning("skipping invalid key \"" + key + "\"\n");
+        continue;
+    }
 
     if (val.length()) {
       ifstream file(val.c_str());
@@ -876,7 +905,7 @@ void HandleRoRw(TAG *tag, const BOOL &ro) {
   }
 }
 
-void HandleTagImport (fstream &input, TAG *tag) {
+void HandleTagImport(fstream &input, TAG *tag) {
   const string &infile = SwitchFile.ValueString();
   fstream in(infile.c_str(), ios_base::in);
 

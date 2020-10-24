@@ -54,6 +54,13 @@ ${APETAG} -i ${MP3_CLONE} -m read
 
 
 newtest
+${APETAG} -i ${MP3_CLONE} -m update -p "Title=--tïtlé2--" -p "Year=--yeár2--"
+${APETAG} -i ${MP3_CLONE} -m read
+${APETAG} -i ${MP3_CLONE} -m update -p "Tïtle=--tïtlé2--" -p "Yeár=--yeár2--"
+${APETAG} -i ${MP3_CLONE} -m read
+
+
+newtest
 ${APETAG} -i ${MP3_CLONE} -m update -p "Title=--title2--" -p "Year=--year2--"
 ${APETAG} -i ${MP3_CLONE} -m update -ro "Title"
 ${APETAG} -i ${MP3_CLONE} -m update -p "Title=--title3--"
