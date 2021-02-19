@@ -598,8 +598,9 @@ SWITCH SwitchResourcePair(
 
 SWITCH SwitchFilePair(
     "f", "general", SWITCH_TYPE_STRING, SWITCH_MODE_ACCUMULATE, "$none$",
-    "specify ape tag and pathname for embedding or extracting data, arguments "
-    "must have form tag=pathname, this option can be used multiple times");
+    "specify ape tag and file to embed from or extract binary data to, "
+    "arguments must have form tag=file, this option can be used multiple "
+    "times");
 
 SWITCH SwitchMode("m", "general", SWITCH_TYPE_STRING, SWITCH_MODE_OVERWRITE,
                   "read", "specify mode (read, update, overwrite, erase or "
