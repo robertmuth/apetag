@@ -213,8 +213,7 @@ public:
       const UINT32 &flags = item->Flags();
 
       if ((flags & APE_FLAG_READONLY) == APE_FLAG_READONLY) {
-        Warning("read only item with key " + key + " was not " +
-                "erased\n");
+        Warning("read only item with key " + key + " was not " + "erased\n");
         items.insert(item);
       }
 
@@ -243,8 +242,8 @@ public:
       const string &value = item->Value();
       const UINT32 &flags = item->Flags();
 
-      if (((newvalue != value) && (newflags != flags)) && ((flags &
-          APE_FLAG_READONLY) == APE_FLAG_READONLY)) {
+      if (((newvalue != value) && (newflags != flags)) &&
+          ((flags & APE_FLAG_READONLY) == APE_FLAG_READONLY)) {
         Warning("read only item with key " + key + " was not modified\n");
         return;
       }
@@ -261,8 +260,8 @@ public:
       }
     }
 
-    Debug("adding item with key " + newkey + " and flags " +
-          hexstr(newflags) + "\n");
+    Debug("adding item with key " + newkey + " and flags " + hexstr(newflags) +
+          "\n");
     _items.insert(newitem);
   }
 
@@ -318,21 +317,19 @@ public:
   }
 
   VOID SetFlags(const UINT32 &flags) {
-     Debug("setting tag with flags " + hexstr(flags) + "\n");
+    Debug("setting tag with flags " + hexstr(flags) + "\n");
     _flags = flags;
   }
 
-  UINT32 Flags() const {
-    return _flags;
-  }
+  UINT32 Flags() const { return _flags; }
 };
 
 LOCALFUN VOID WriteApeHeaderFooter(fstream &input, const TAG *tag,
                                    UINT32 flags) {
   char buf[4];
 
-  Info("writing header/footer at " + decstr(int(input.tellp())) + " flags: " +
-       hexstr(flags) + "\n");
+  Info("writing header/footer at " + decstr(int(input.tellp())) +
+       " flags: " + hexstr(flags) + "\n");
 
   if (sizeof(APE_HEADER_FOOTER) != 32)
     Error("bad size");
@@ -417,18 +414,18 @@ LOCALFUN VOID WriteApeTag(fstream &input, const TAG *tag) {
             " target pos " + decstr(tag_offset) + "\n");
   }
 
-  WriteApeHeaderFooter(input, tag, flags | APE_FLAG_IS_HEADER | APE_FLAG_HAVE_HEADER);
+  WriteApeHeaderFooter(input, tag,
+                       flags | APE_FLAG_IS_HEADER | APE_FLAG_HAVE_HEADER);
   WriteApeItems(input, tag);
   WriteApeHeaderFooter(input, tag, flags | APE_FLAG_HAVE_HEADER);
 }
 
-LOCALFUN VOID Truncate(fstream &input, const TAG *tag,
-                       const string &filename) {
+LOCALFUN VOID Truncate(fstream &input, const TAG *tag, const string &filename) {
   UINT32 pos = input.tellp();
 
   if (pos < tag->FileLength()) {
     Info("truncating file from " + decstr(tag->FileLength()) + " to " +
-            decstr(pos) + "\n");
+         decstr(pos) + "\n");
     int result = truncate(filename.c_str(), pos);
     if (result) {
       Warning("truncating file failed");
@@ -462,8 +459,8 @@ LOCALFUN TAG *ReadAndProcessApeHeader(fstream &input) {
   const string id3magic(id3v1tag._magic, 0, 3);
 
   if (id3magic == ID3V1_MAGIC) {
-    Info("file contains an id3v1 tag at " +
-         decstr(file_length - offset) + "\n");
+    Info("file contains an id3v1 tag at " + decstr(file_length - offset) +
+         "\n");
   } else {
     offset = 0;
   }
@@ -504,8 +501,8 @@ LOCALFUN TAG *ReadAndProcessApeHeader(fstream &input) {
   UINT32 tagflags = 0;
 
   if (file_length >= (length + sizeof(APE_HEADER_FOOTER) + offset)) {
-    input.seekg(-(INT32)(length + sizeof(APE_HEADER_FOOTER) +
-                offset), ios::end);
+    input.seekg(-(INT32)(length + sizeof(APE_HEADER_FOOTER) + offset),
+                ios::end);
     APE_HEADER_FOOTER ape2;
 
     input.read((char *)&ape2, sizeof(APE_HEADER_FOOTER));
@@ -533,10 +530,10 @@ LOCALFUN TAG *ReadAndProcessApeHeader(fstream &input) {
     }
   }
 
-  TAG *tag = new TAG(
-      file_length,
-      file_length - length - offset - have_header * sizeof(APE_HEADER_FOOTER),
-      items, tagflags);
+  TAG *tag = new TAG(file_length,
+                     file_length - length - offset -
+                         have_header * sizeof(APE_HEADER_FOOTER),
+                     items, tagflags);
 
   // read and process tag data
 
@@ -598,18 +595,20 @@ SWITCH SwitchResourcePair(
 
 SWITCH SwitchFilePair(
     "f", "general", SWITCH_TYPE_STRING, SWITCH_MODE_ACCUMULATE, "$none$",
-    "specify ape tag and pathname for embedding or extracting data, arguments "
-    "must have form tag=pathname, this option can be used multiple times");
+    "specify ape tag and file to embed from or extract binary data to, "
+    "arguments must have form tag=file, this option can be used multiple "
+    "times");
 
 SWITCH SwitchMode("m", "general", SWITCH_TYPE_STRING, SWITCH_MODE_OVERWRITE,
-                  "read", "specify mode (read, update, overwrite, erase or "
+                  "read",
+                  "specify mode (read, update, overwrite, erase or "
                   "setro/setrw)");
 
 SWITCH SwitchRo("ro", "general", SWITCH_TYPE_STRING, SWITCH_MODE_ACCUMULATE,
-                  "$none$", "specify ape tag to set read only");
+                "$none$", "specify ape tag to set read only");
 
 SWITCH SwitchRw("rw", "general", SWITCH_TYPE_STRING, SWITCH_MODE_ACCUMULATE,
-                  "$none$", "specify ape tag to set read write");
+                "$none$", "specify ape tag to set read write");
 
 SWITCH SwitchFile("file", "general", SWITCH_TYPE_STRING, SWITCH_MODE_OVERWRITE,
                   "", "specify pathname for ape-tagged import file");
@@ -686,24 +685,22 @@ const pair<string, string> ParsedPair(const string &pair) {
 }
 
 BOOL ValidKey(const string &key) {
-    // The APEv2 specification does not allow the following for keys
-    if (key == "ID3" || key == "TAG" || key == "OggS" ||
-        key == "MP+") {
-      Warning("key \"" + key + "\" is not an allowed key\n");
+  // The APEv2 specification does not allow the following for keys
+  if (key == "ID3" || key == "TAG" || key == "OggS" || key == "MP+") {
+    Warning("key \"" + key + "\" is not an allowed key\n");
+    return false;
+  }
+
+  // The APEv2 specification requires that keys consist only of ASCII
+  // printable characters
+  for (string::const_iterator it = key.cbegin(); it != key.cend(); ++it) {
+    if (((UINT32)*it < 32) || ((UINT32)*it > 126)) {
+      Warning("key \"" + key + "\" contains a non-printable ASCII character\n");
       return false;
     }
+  }
 
-    // The APEv2 specification requires that keys consist only of ASCII
-    // printable characters
-    for (string::const_iterator it = key.cbegin(); it != key.cend(); ++it) {
-        if (((UINT32)*it < 32) || ((UINT32)*it > 126)) {
-            Warning("key \"" + key +
-                    "\" contains a non-printable ASCII character\n");
-            return false;
-        }
-    }
-
-    return true;
+  return true;
 }
 
 void HandleModeRead(TAG *tag) {
@@ -733,15 +730,16 @@ void HandleModeRead(TAG *tag) {
       lockflag = "RO\t";
     }
 
-    if ((flags & APE_TAG_ITEM_FLAG_EXTERNAL_RESOURCE) == APE_TAG_ITEM_FLAG_EXTERNAL_RESOURCE) {
-        dumpitem += "RSC\t" + lockflag;
-        dumpitem += key + "\t" + value;
+    if ((flags & APE_TAG_ITEM_FLAG_EXTERNAL_RESOURCE) ==
+        APE_TAG_ITEM_FLAG_EXTERNAL_RESOURCE) {
+      dumpitem += "RSC\t" + lockflag;
+      dumpitem += key + "\t" + value;
     } else if ((flags & APE_TAG_ITEM_FLAG_BINARY) == APE_TAG_ITEM_FLAG_BINARY) {
-        dumpitem += "BIN\t" + lockflag;
-        dumpitem += key;
+      dumpitem += "BIN\t" + lockflag;
+      dumpitem += key;
     } else if ((flags & APE_TAG_ITEM_FLAG_TEXT) == APE_TAG_ITEM_FLAG_TEXT) {
-        dumpitem += "TXT\t" + lockflag;
-        dumpitem += key + "\t" + value;
+      dumpitem += "TXT\t" + lockflag;
+      dumpitem += key + "\t" + value;
     }
 
     cout << dumpitem + "\n";
@@ -751,8 +749,7 @@ void HandleModeRead(TAG *tag) {
 
   // there is no switch 0, start at switch 1
   for (UINT32 i = 1; i < num_file_items; i++) {
-    const pair<string, string> pair =
-        ParsedPair(SwitchFilePair.ValueString(i));
+    const pair<string, string> pair = ParsedPair(SwitchFilePair.ValueString(i));
 
     const string &key = pair.first;
     const string &val = pair.second;
@@ -808,8 +805,8 @@ void HandleModeUpdate(TAG *tag) {
     const string &val = pair.second;
 
     if (!ValidKey(key)) {
-        Warning("skipping invalid key \"" + key + "\"\n");
-        continue;
+      Warning("skipping invalid key \"" + key + "\"\n");
+      continue;
     }
 
     Debug("adding (" + key + "," + val + ")\n");
@@ -828,8 +825,8 @@ void HandleModeUpdate(TAG *tag) {
     const string &val = pair.second;
 
     if (!ValidKey(key)) {
-        Warning("skipping invalid key \"" + key + "\"\n");
-        continue;
+      Warning("skipping invalid key \"" + key + "\"\n");
+      continue;
     }
 
     Debug("adding (" + key + "," + val + ")\n");
@@ -847,8 +844,8 @@ void HandleModeUpdate(TAG *tag) {
     string val = pair.second;
 
     if (!ValidKey(key)) {
-        Warning("skipping invalid key \"" + key + "\"\n");
-        continue;
+      Warning("skipping invalid key \"" + key + "\"\n");
+      continue;
     }
 
     if (val.length()) {
@@ -969,9 +966,9 @@ int main(int argc, char *argv[]) {
   if (filename == "")
     Error("no input file specified\n");
 
-  const BOOL change_file = (mode == "overwrite" || mode == "update"
-                            || mode == "erase" || mode == "setro"
-                            || mode == "setrw");
+  const BOOL change_file =
+      (mode == "overwrite" || mode == "update" || mode == "erase" ||
+       mode == "setro" || mode == "setrw");
 
   fstream input(filename.c_str(),
                 change_file ? (ios_base::in | ios_base::out) : ios_base::in);
@@ -992,9 +989,9 @@ int main(int argc, char *argv[]) {
 
   const string id3magic(id3v1tag._magic, 0, 3);
 
-  const BOOL has_apetag = (!((tag->TagOffset() == id3_offset)
-                       && (id3magic == ID3V1_MAGIC))
-                       && (tag->TagOffset() != tag->FileLength()));
+  const BOOL has_apetag =
+      (!((tag->TagOffset() == id3_offset) && (id3magic == ID3V1_MAGIC)) &&
+       (tag->TagOffset() != tag->FileLength()));
 
   if (mode == "read") {
     if (!has_apetag) {
