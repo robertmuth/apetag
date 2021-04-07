@@ -36,10 +36,10 @@ Items:
 Type	RO/RW	Field	Value
 TXT	RW	Year	--yeár2--
 TXT	RW	Title	--tïtlé2--
-W: key "Tïtle" contains a non-printable ASCII character
-W: skipping invalid key "Tïtle"
-W: key "Yeár" contains a non-printable ASCII character
-W: skipping invalid key "Yeár"
+W: "Tïtle" contains a non-printable ASCII character
+W: skipping invalid item "Tïtle"
+W: "Yeár" contains a non-printable ASCII character
+W: skipping invalid item "Yeár"
 Found APE tag at offset 193
 Items:
 Type	RO/RW	Field	Value
@@ -47,13 +47,13 @@ TXT	RW	Year	--yeár2--
 TXT	RW	Title	--tïtlé2--
 ============================================================
 test 5
-W: read only item with key Title was not modified
+W: read only item "Title" was not modified
 Found APE tag at offset 193
 Items:
 Type	RO/RW	Field	Value
 TXT	RW	Year	--year2--
 TXT	RO	Title	--title2--
-W: read only item with key Title was not erased
+W: read only item "Title" was not erased
 Found APE tag at offset 193
 Items:
 Type	RO/RW	Field	Value
@@ -106,13 +106,13 @@ BIN	RW	Test.sh
 No valid APE tag found
 ============================================================
 test 9
-W: read only item with key Test.sh was not modified
+W: read only item "Test.sh" was not modified
 Found APE tag at offset 193
 Items:
 Type	RO/RW	Field	Value
 BIN	RW	NotTest
 BIN	RO	Test.sh
-W: read only item with key Test.sh was not erased
+W: read only item "Test.sh" was not erased
 Found APE tag at offset 193
 Items:
 Type	RO/RW	Field	Value
@@ -165,18 +165,18 @@ RSC	RW	TestPage	http://bo.gus/addr/testpage.html
 No valid APE tag found
 ============================================================
 test 13
-W: read only item with key TestPage was not modified
+W: read only item "TestPage" was not modified
 Found APE tag at offset 193
 Items:
 Type	RO/RW	Field	Value
 TXT	RW	ExternalCover	/dev/zero
 RSC	RO	TestPage	http://bo.gus/website/page.html
-W: read only item with key TestPage was not modified
+W: read only item "TestPage" was not modified
 Found APE tag at offset 193
 Items:
 Type	RO/RW	Field	Value
 RSC	RO	TestPage	http://bo.gus/website/page.html
-W: read only item with key TestPage was not erased
+W: read only item "TestPage" was not erased
 Found APE tag at offset 193
 Items:
 Type	RO/RW	Field	Value
@@ -221,9 +221,9 @@ Type	RO/RW	Field	Value
 TXT	RO	test	file
 RSC	RO	externalcover	/dev/zero
 BIN	RO	test.sh
-W: read only item with key test was not modified
-W: read only item with key externalcover was not modified
-W: read only item with key test.sh was not modified
+W: read only item "test" was not modified
+W: read only item "externalcover" was not modified
+W: read only item "test.sh" was not modified
 Found APE tag at offset 193
 Items:
 Type	RO/RW	Field	Value
@@ -270,8 +270,8 @@ Items:
 Type	RO/RW	Field	Value
 ============================================================
 test 19
-W: key "ID3" is not an allowed key
-W: skipping invalid key "ID3"
+W: "ID3" is not an allowed item key
+W: skipping invalid item "ID3"
 Found APE tag at offset 193
 Items:
 Type	RO/RW	Field	Value

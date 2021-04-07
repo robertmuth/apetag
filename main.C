@@ -213,7 +213,7 @@ public:
       const UINT32 &flags = item->Flags();
 
       if ((flags & APE_FLAG_READONLY) == APE_FLAG_READONLY) {
-        Warning("read only item with key " + key + " was not " + "erased\n");
+        Warning("read only item \"" + key + "\" was not " + "erased\n");
         items.insert(item);
       }
 
@@ -244,24 +244,23 @@ public:
 
       if (((newvalue != value) && (newflags != flags)) &&
           ((flags & APE_FLAG_READONLY) == APE_FLAG_READONLY)) {
-        Warning("read only item with key " + key + " was not modified\n");
+        Warning("read only item \"" + key + "\" was not modified\n");
         return;
       }
 
       if (newvalue.length() == 0) {
-        Debug("erasing item with key " + key + "\n");
+        Debug("erasing item " + key + "\n");
         _items.erase(item);
         return;
       } else {
-        Debug("replacing item with key " + key + "\n");
+        Debug("replacing item " + key + "\n");
         _items.erase(item);
         _items.insert(newitem);
         return;
       }
     }
 
-    Debug("adding item with key " + newkey + " and flags " + hexstr(newflags) +
-          "\n");
+    Debug("adding item " + newkey + " with flags " + hexstr(newflags) + "\n");
     _items.insert(newitem);
   }
 
@@ -372,7 +371,7 @@ LOCALFUN VOID WriteApeItems(fstream &input, const TAG *tag) {
     const string &key = item->Key();
     const UINT32 key_length = key.length();
 
-    Info("writing item " + key + " " +
+    Info("writing item \"" + key + "\" " +
          (flags == APE_TAG_ITEM_FLAG_BINARY ? "<Embedded Binary>" : value) +
          " " + hexstr(flags) + "\n");
 
@@ -561,7 +560,7 @@ LOCALFUN TAG *ReadAndProcessApeHeader(fstream &input) {
     tag_items += l;
 
     Info("tag " + decstr(i) + ":  len: " + decstr(l) + "  flags: " + hexstr(f) +
-         "  key: " + key + " value: " +
+         "  item: " + key + " value: " +
          (flags == APE_TAG_ITEM_FLAG_BINARY ? "<Embedded Binary>" : value) +
          "\n");
     tag->UpdateItem(new ITEM(key, value, flags));
@@ -585,18 +584,18 @@ SWITCH SwitchDebug("debug", "general", SWITCH_TYPE_BOOL, SWITCH_MODE_OVERWRITE,
 
 SWITCH SwitchPair(
     "p", "general", SWITCH_TYPE_STRING, SWITCH_MODE_ACCUMULATE, "$none$",
-    "specify ape tag and value, arguments must have form tag=val, this option "
-    "can be used multiple times");
+    "specify ape item and value, arguments must have form item=val, this "
+    "option can be used multiple times");
 
 SWITCH SwitchResourcePair(
     "r", "general", SWITCH_TYPE_STRING, SWITCH_MODE_ACCUMULATE, "$none$",
-    "specify ape tag and value indicating external resource, arguments must "
-    "have form tag=val, this option can be used multiple times");
+    "specify ape item and value indicating external resource, arguments must "
+    "have form item=val, this option can be used multiple times");
 
 SWITCH SwitchFilePair(
     "f", "general", SWITCH_TYPE_STRING, SWITCH_MODE_ACCUMULATE, "$none$",
-    "specify ape tag and file to embed from or extract binary data to, "
-    "arguments must have form tag=file, this option can be used multiple "
+    "specify ape item and file to embed from or extract binary data to, "
+    "arguments must have form item=file, this option can be used multiple "
     "times");
 
 SWITCH SwitchMode("m", "general", SWITCH_TYPE_STRING, SWITCH_MODE_OVERWRITE,
@@ -605,13 +604,13 @@ SWITCH SwitchMode("m", "general", SWITCH_TYPE_STRING, SWITCH_MODE_OVERWRITE,
                   "setro/setrw)");
 
 SWITCH SwitchRo("ro", "general", SWITCH_TYPE_STRING, SWITCH_MODE_ACCUMULATE,
-                "$none$", "specify ape tag to set read only");
+                "$none$", "specify ape item to set read only");
 
 SWITCH SwitchRw("rw", "general", SWITCH_TYPE_STRING, SWITCH_MODE_ACCUMULATE,
-                "$none$", "specify ape tag to set read write");
+                "$none$", "specify ape item to set read write");
 
 SWITCH SwitchFile("file", "general", SWITCH_TYPE_STRING, SWITCH_MODE_OVERWRITE,
-                  "", "specify pathname for ape-tagged import file");
+                  "", "specify ape tag import file");
 
 // ========================================================================
 int Usage() {
@@ -620,8 +619,8 @@ int Usage() {
   cout << R"STR(
 Web: http://www.muth.org/Robert/Apetag
 
-Usage: apetag -i input-file -m mode  {[-p|-f|-r] tag=value}*
-Or: apetag -i input-file -m {update} {[-rw|-ro] tag}
+Usage: apetag -i input-file -m mode  {[-p|-f|-r] item=value}*
+Or: apetag -i input-file -m {update} {[-rw|-ro] item}
 Or: apetag -i input-file -m {overwrite} {-file import-file}
 
 change or create APE tag for file input-file
@@ -634,19 +633,19 @@ Mode read (default):
     extract item "Cover Art (front)" to file cover.jpg
 
 Mode update:
-    change selected key,value pairs
+    change selected item,value pairs
     the pairs are specified with the -p, -f, or -r options
-        e.g.: -p Artist=Nosferaru -p Album=Bite -r Homepage=http://nos.fer/bite
+        e.g.: -p Artist=Nosferatu -p Album=Bite -r Homepage=http://nos.fer/bite
     update items Artist, Album and Homepage
-    tags not listed with the -p, -f, or -r option will remain unchanged
-    tags with empty values are removed
-    tags set read only will remain unchanged
+    items not listed with the -p, -f, or -r option will remain unchanged
+    items with empty values are removed
+    items set read only will remain unchanged
 
 Mode overwrite:
-    Overwrite all the tags with items specified by the -p, -f, or -r options
-    tags not listed with the -p, -f, or -r option will be removed
-    replace the tags with items from an ape-tagged file with the -file option
-    tags set read only will remain unchanged
+    Overwrite items specified by the -p, -f, or -r options
+    items not listed with the -p, -f, or -r option will be removed
+    replace all items with items from an APE tagged file with the -file option
+    items set read only will remain unchanged
     this mode is also used to create ape tags initially
 
 Mode erase:
@@ -687,7 +686,7 @@ const pair<string, string> ParsedPair(const string &pair) {
 BOOL ValidKey(const string &key) {
   // The APEv2 specification does not allow the following for keys
   if (key == "ID3" || key == "TAG" || key == "OggS" || key == "MP+") {
-    Warning("key \"" + key + "\" is not an allowed key\n");
+    Warning("\"" + key + "\" is not an allowed item key\n");
     return false;
   }
 
@@ -695,7 +694,7 @@ BOOL ValidKey(const string &key) {
   // printable characters
   for (string::const_iterator it = key.cbegin(); it != key.cend(); ++it) {
     if (((UINT32)*it < 32) || ((UINT32)*it > 126)) {
-      Warning("key \"" + key + "\" contains a non-printable ASCII character\n");
+      Warning("\"" + key + "\" contains a non-printable ASCII character\n");
       return false;
     }
   }
@@ -805,7 +804,7 @@ void HandleModeUpdate(TAG *tag) {
     const string &val = pair.second;
 
     if (!ValidKey(key)) {
-      Warning("skipping invalid key \"" + key + "\"\n");
+      Warning("skipping invalid item \"" + key + "\"\n");
       continue;
     }
 
@@ -825,7 +824,7 @@ void HandleModeUpdate(TAG *tag) {
     const string &val = pair.second;
 
     if (!ValidKey(key)) {
-      Warning("skipping invalid key \"" + key + "\"\n");
+      Warning("skipping invalid item \"" + key + "\"\n");
       continue;
     }
 
@@ -844,7 +843,7 @@ void HandleModeUpdate(TAG *tag) {
     string val = pair.second;
 
     if (!ValidKey(key)) {
-      Warning("skipping invalid key \"" + key + "\"\n");
+      Warning("skipping invalid item \"" + key + "\"\n");
       continue;
     }
 
