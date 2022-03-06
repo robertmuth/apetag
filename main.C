@@ -447,29 +447,36 @@ LOCALFUN TAG *ReadAndProcessApeHeader(fstream &input) {
 
   // The APEv2 specification says that the APEv2 tag, when placed at the end of
   // a file, must be placed after the last frame and before any ID3v1 tag.
+  APE_HEADER_FOOTER ape;
 
-  UINT32 offset = sizeof(ID3v1_TAG);
+  UINT32 offset = 0;
 
-  ID3v1_TAG id3v1tag;
+  // prevent false ID3v1 positives on APEv2 tag magic
+  input.seekg(file_length - sizeof(ID3v1_TAG) - 3);
+  input.read(reinterpret_cast<char *>(&ape), sizeof(APE_HEADER_FOOTER));
 
-  input.seekg(file_length - offset);
-  input.read(reinterpret_cast<char *>(&id3v1tag), sizeof(ID3v1_TAG));
+  string magic(ape._magic, 0, 8);
 
-  const string id3magic(id3v1tag._magic, 0, 3);
+  if (magic != APE_MAGIC) {
+    ID3v1_TAG id3v1tag;
 
-  if (id3magic == ID3V1_MAGIC) {
-    Info("file contains an id3v1 tag at " + decstr(file_length - offset) +
-         "\n");
-  } else {
-    offset = 0;
+    input.seekg(file_length - sizeof(ID3v1_TAG));
+    input.read(reinterpret_cast<char *>(&id3v1tag), sizeof(ID3v1_TAG));
+
+    magic = string(id3v1tag._magic, 0, 3);
+
+    if (magic == ID3V1_MAGIC) {
+      offset = sizeof(ID3v1_TAG);
+      Info("file contains an id3v1 tag at " + decstr(file_length - offset) +
+           "\n");
+    }
   }
 
   // read footer
-  APE_HEADER_FOOTER ape;
   input.seekg(file_length - offset - sizeof(APE_HEADER_FOOTER));
   input.read(reinterpret_cast<char *>(&ape), sizeof(APE_HEADER_FOOTER));
 
-  const string magic(ape._magic, 0, 8);
+  magic = string(ape._magic, 0, 8);
 
   if (magic != APE_MAGIC) {
     Info("file does not contain ape tag\n");
