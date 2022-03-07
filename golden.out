@@ -275,4 +275,11 @@ W: skipping invalid item "ID3"
 Found APE tag at offset 193
 Items:
 Type	RO/RW	Field	Value
+============================================================
+test 20
+Found APE tag at offset 164
+Items:
+Type	RO/RW	Field	Value
+TXT	RW	one	id3v1magicdetecttag1
+TXT	RW	two	id3v1magicdetecttagtwo2
 done
