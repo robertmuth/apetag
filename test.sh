@@ -6,7 +6,9 @@ set -o errexit
 
 readonly APETAG=./apetag
 readonly MP3=./empty.mp3
+readonly MP3_APEONLY=./empty_ape.mp3
 readonly MP3_CLONE=./clone.mp3
+readonly MP3_CLONEAPE=./clone_ape.mp3
 readonly BIN1=./test.sh
 readonly BIN2=./COPYING
 readonly BIN3=./README.md
@@ -15,11 +17,13 @@ COUNTER=0
 
 cleanup() {
     rm -f ${MP3_CLONE}
+    rm -f ${MP3_CLONEAPE}
 }
 trap cleanup EXIT
 
 clone() {
     cp ${MP3} ${MP3_CLONE}
+    cp ${MP3_APEONLY} ${MP3_CLONEAPE}
 }
 
 
@@ -194,6 +198,9 @@ ${APETAG} -i ${MP3_CLONE} -m read
 newtest
 ${APETAG} -i ${MP3_CLONE} -m update -p "ID3"="--title--"
 ${APETAG} -i ${MP3_CLONE} -m read
+
+newtest
+${APETAG} -i ${MP3_CLONEAPE} -m read
 
 
 echo "done"
