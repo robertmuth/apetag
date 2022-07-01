@@ -205,10 +205,7 @@ public:
 
     ITEM_SET items;
 
-    ITEM_SET::const_iterator it = _items.begin();
-    while (it != _items.end()) {
-      const ITEM *item = *it;
-
+    for (const ITEM *item : _items) {
       const string &key = item->Key();
       const UINT32 &flags = item->Flags();
 
@@ -216,8 +213,6 @@ public:
         Warning("read only item \"" + key + "\" was not " + "erased\n");
         items.insert(item);
       }
-
-      ++it;
     }
 
     _items.clear();
@@ -265,17 +260,12 @@ public:
   }
 
   const ITEM *FindItem(const string &findkey) const {
-    ITEM_SET::const_iterator it = _items.begin();
-    while (it != _items.end()) {
-      const ITEM *item = *it;
-
+    for (const ITEM *item : _items) {
       const string &key = item->Key();
 
       if (CaseCompare(key, findkey)) {
         return item;
       }
-
-      ++it;
     }
 
     return new ITEM();
@@ -289,10 +279,7 @@ public:
 
   UINT32 ItemLength() const {
     UINT32 length = 0;
-    for (ITEM_SET::const_iterator it = Items().begin(); it != Items().end();
-         ++it) {
-      const ITEM *item = *it;
-
+    for (const ITEM *item : Items()) {
       if (item->Value() == "")
         continue;
       length += 8;
@@ -305,9 +292,7 @@ public:
 
   UINT32 ItemCount() const {
     UINT32 count = 0;
-    for (ITEM_SET::const_iterator it = Items().begin(); it != Items().end();
-         ++it) {
-      const ITEM *item = *it;
+    for (const ITEM *item : Items()) {
       if (item->Value() == "")
         continue;
       count++;
@@ -356,10 +341,7 @@ LOCALFUN VOID WriteApeItems(fstream &input, const TAG *tag) {
   char buf[4];
 
   Info("writing items at " + decstr(int(input.tellp())) + "\n");
-  for (ITEM_SET::const_iterator it = tag->Items().begin();
-       it != tag->Items().end(); ++it) {
-    const ITEM *item = *it;
-
+  for (const ITEM *item : tag->Items()) {
     const UINT32 &flags = item->Flags();
 
     const string &value = item->Value();
@@ -605,10 +587,10 @@ SWITCH SwitchFilePair(
     "arguments must have form item=file, this option can be used multiple "
     "times");
 
-SWITCH SwitchMode("m", "general", SWITCH_TYPE_STRING, SWITCH_MODE_OVERWRITE,
-                  "read",
-                  "specify mode (read, update, overwrite, erase or "
-                  "setro/setrw)");
+SWITCH
+SwitchMode("m", "general", SWITCH_TYPE_STRING, SWITCH_MODE_OVERWRITE, "read",
+           "specify mode (read, readasflags, update, overwrite, erase or "
+           "setro/setrw)");
 
 SWITCH SwitchRo("ro", "general", SWITCH_TYPE_STRING, SWITCH_MODE_ACCUMULATE,
                 "$none$", "specify ape item to set read only");
@@ -709,6 +691,22 @@ BOOL ValidKey(const string &key) {
   return true;
 }
 
+string HexEscape(const string &s) {
+  string out;
+  for (UINT32 c : s) {
+    out += c;
+  }
+  return out;
+}
+
+void HandleModeReadAsFlags(TAG *tag) {
+  for (const ITEM *item : tag->Items()) {
+    const string &key = item->Key();
+    const string &value = item->Value();
+    cout << "-p " << key << "=" << HexEscape(value) << "\n";
+  }
+}
+
 void HandleModeRead(TAG *tag) {
   map<string, string> items;
 
@@ -718,10 +716,7 @@ void HandleModeRead(TAG *tag) {
   }
   cout << "Items:\n";
   cout << "Type\tRO/RW\tField\tValue\n";
-  for (ITEM_SET::const_iterator it = tag->Items().begin();
-       it != tag->Items().end(); ++it) {
-    const ITEM *item = *it;
-
+  for (const ITEM *item : tag->Items()) {
     const string &key = item->Key();
     const string &value = item->Value();
     const UINT32 &flags = item->Flags();
@@ -923,10 +918,8 @@ void HandleTagImport(fstream &input, TAG *tag) {
   TAG *offsettag = new TAG(tag->FileLength(), tag->TagOffset(),
                            intag->ItemCount(), intag->Flags());
 
-  ITEM_SET::const_iterator it = intag->Items().begin();
-  while (it != intag->Items().end()) {
-    offsettag->UpdateItem(*it);
-    ++it;
+  for (const auto *item : intag->Items()) {
+    offsettag->UpdateItem(item);
   }
 
   WriteApeTag(input, offsettag);
@@ -1004,6 +997,12 @@ int main(int argc, char *argv[]) {
       cout << "No valid APE tag found\n";
     } else {
       HandleModeRead(tag.get());
+    }
+  } else if (mode == "readasflags") {
+    if (!has_apetag) {
+      cout << "No valid APE tag found\n";
+    } else {
+      HandleModeReadAsFlags(tag.get());
     }
   } else if (mode == "update") {
     if ((tag->Flags() & APE_FLAG_READONLY) == APE_FLAG_READONLY) {
