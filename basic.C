@@ -338,9 +338,10 @@ GLOBALFUN string StringDecSigned(INT32 l, UINT32 digits, CHAR padding) {
  */
 
 GLOBALFUN string StringHex(UINT32 l, UINT32 digits) {
-  CHAR buffer[64];
-
+  ASSERT(digits < 20, "bad width");
+  CHAR buffer[32];
   UINT32 i = 31;
+  UINT32  digits_so_far = 0;
   buffer[i] = '\0';
 
   do {
@@ -352,11 +353,12 @@ GLOBALFUN string StringHex(UINT32 l, UINT32 digits) {
       digit += '0';
 
     buffer[i] = digit;
+    digits_so_far++;
     l /= 16;
   } while (l);
 
-  digits = 31 - digits;
-  while (i > digits) {
+  while (digits_so_far < digits) {
+    digits_so_far++;
     i--;
     buffer[i] = '0';
   }
