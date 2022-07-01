@@ -1,4 +1,4 @@
-# Apetag/Tagdir readme file
+# Apetag ![Status](../../workflows/apetag-tests/badge.svg)
 
 This package contains three tagging related tools: apetag, tagdir, rmid3tag
 

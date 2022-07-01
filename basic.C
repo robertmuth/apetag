@@ -341,7 +341,7 @@ GLOBALFUN string StringHex(UINT32 l, UINT32 digits) {
   ASSERT(digits < 20, "bad width");
   CHAR buffer[32];
   UINT32 i = 31;
-  UINT32  digits_so_far = 0;
+  UINT32 digits_so_far = 0;
   buffer[i] = '\0';
 
   do {
