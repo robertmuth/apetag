@@ -45,16 +45,17 @@ check_py:
 	pylint  --rcfile=pylintrc *.py
 
 clean:
-	rm -f *.o *.pyc *~ \#* $(PROGRAMS) clone.mp3 test.out
+	rm -f *.o *.pyc *~ \#* $(PROGRAMS) test.out
 
 dep:
 	makedepend -Y $(SOURCES)
 
 format:
 	clang-format -i $(SOURCES) $(HEADERS)
+
 test: apetag
 	./test.sh > test.out
-	diff test.out golden.out
+	diff test.out TestData/golden.out
 	@echo test OK
 
 # ======================================================================
