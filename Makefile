@@ -21,9 +21,6 @@ SOURCES = basic.C switch.C main.C
 OBJECTS = $(SOURCES:.C=.o)
 
 HEADERS = basic.H switch.H
-
-CXX = g++
-CXX = clang++
 CXXDEBUG = -g
 CXXOPT = -O3
 CXXFLAGS = -Wall -Werror -Wextra -pedantic -std=c++0x $(CXXOPT)   $(CXXDEBUG)
