@@ -1,0 +1,48 @@
+#
+name: apetag-tests
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  build:
+
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        python-version: [3.9]
+        os: [ubuntu-latest]
+
+    steps:
+
+    - uses: actions/checkout@v2
+    - name: Install Ubuntu Deps
+      run: |
+        sudo apt-get update
+        echo "delayed packages for these cause a lot of headaches:"
+        apt-cache madison  libc6-dev-i386
+        apt-cache madison  libc6-x32
+        echo
+    - name: Show Version Summary
+      run: |
+        uname -a
+        echo
+        lsb_release -a
+        echo
+        gcc -v
+        echo
+        g++ -v
+        echo
+        clang -v
+        echo
+        clang++ -v
+    - name: Run Tests Gcc
+      run: |
+        CC=gcc CXX=g++ make clean test
+    - name: Run Tests Clang
+      run: |
+        CC=clang CXX=clang++ make clean test
