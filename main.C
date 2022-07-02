@@ -601,6 +601,9 @@ SWITCH SwitchRw("rw", "general", SWITCH_TYPE_STRING, SWITCH_MODE_ACCUMULATE,
 SWITCH SwitchFile("file", "general", SWITCH_TYPE_STRING, SWITCH_MODE_OVERWRITE,
                   "", "specify ape tag import file");
 
+SWITCH SwitchFilePrefix("fileprefix", "general", SWITCH_TYPE_STRING, SWITCH_MODE_OVERWRITE,
+                  "", "specify file prefix for mode `readasflags`");
+
 // ========================================================================
 int Usage() {
   cout << "APETAG version: " << ExtractVersion()
@@ -699,11 +702,39 @@ string HexEscape(const string &s) {
   return out;
 }
 
+void SaveDataToFile(const string& filename, const string& value) {
+  if (ifstream(filename.c_str()).good()) {
+    Error("output file exists: " + filename + "\n");
+  }
+
+  ofstream file(filename.c_str());
+
+  if (!file.is_open())
+    Error("could not open file: " + filename + "\n");
+
+  UINT32 pos = value.find('\0') + 1;
+  file << value.substr(pos);
+
+  file.close();
+}
+
 void HandleModeReadAsFlags(TAG *tag) {
+  string prefix = SwitchFilePrefix.ValueString();
   for (const ITEM *item : tag->Items()) {
     const string &key = item->Key();
     const string &value = item->Value();
-    cout << "-p " << key << "=" << HexEscape(value) << "\n";
+    const UINT32 &flags = item->Flags();
+
+
+    if (flags & APE_TAG_ITEM_FLAG_BINARY) {
+      if (prefix.empty()) {
+        Error("not file prefix specied\n");
+      }
+      SaveDataToFile(prefix + key, value);
+      cout << "-f " << key << "=" <<  prefix + key << "\n";
+    } else {
+      cout << "-p " << key << "=" << HexEscape(value) << "\n";
+    }
   }
 }
 
@@ -753,24 +784,11 @@ void HandleModeRead(TAG *tag) {
     const pair<string, string> pair = ParsedPair(SwitchFilePair.ValueString(i));
 
     const string &key = pair.first;
-    const string &val = pair.second;
+    const string &filename = pair.second;
 
     if (items.count(key)) {
       const string &value = items[key];
-
-      if (ifstream(val.c_str()).good()) {
-        Error("output file exists: " + val + "\n");
-      }
-
-      ofstream file(val.c_str());
-
-      if (!file.is_open())
-        Error("could not open file: " + val + "\n");
-
-      UINT32 pos = value.find('\0') + 1;
-      file << value.substr(pos);
-
-      file.close();
+      SaveDataToFile(filename, value);
     } else {
       Error("item \"" + key + "\" not found\n");
     }

@@ -200,7 +200,7 @@ Items:
 Type	RO/RW	Field	Value
 RSC	RW	TestPage	http://bo.gus/addr/testpage.html
 ============================================================
-test Test5
+test BinaryTags
 Found APE tag at offset 193
 Items:
 Type	RO/RW	Field	Value
@@ -213,6 +213,12 @@ Type	RO/RW	Field	Value
 TXT	RW	test	File
 RSC	RW	externalcover	/dev/zero
 BIN	RW	test.sh
+============================================================
+test ReadAsFlags
+-p Test=File
+-f Test.sh=tagfile.Test.sh
+TagFiles:
+tagfile.Test.sh
 ============================================================
 test Test6
 Found APE tag at offset 193

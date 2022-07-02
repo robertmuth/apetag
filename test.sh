@@ -165,12 +165,20 @@ ${APETAG} -i ${MP3_CLONE} -m overwrite -r "TestPage=http://bo.gus/addr/testpage.
 ${APETAG} -i ${MP3_CLONE} -m read
 
  
-newtest  Test5
+newtest  BinaryTags
+rm -f ${BIN1}.actual
 ${APETAG} -i ${MP3_CLONE} -m update -f "Test.sh"=${BIN1} -p "Test"="File" -r "ExternalCover"="/dev/zero"
 ${APETAG} -i ${MP3_CLONE} -m read
 ${APETAG} -i ${MP3_CLONE} -m update -f "test.sh"=${BIN1} -p "test"="File" -r "externalcover"="/dev/zero"
-${APETAG} -i ${MP3_CLONE} -m read
+${APETAG} -i ${MP3_CLONE} -m read -f "test.sh"=${BIN1}.actual
+diff ${BIN1} ${BIN1}.actual
 
+newtest  ReadAsFlags
+rm -f tagfile*
+${APETAG} -i ${MP3_CLONE} -m update -f "Test.sh"=${BIN1} -p "Test"="File" 
+${APETAG} -i ${MP3_CLONE} -m readasflags -fileprefix tagfile.
+echo "TagFiles:"
+ls tagfile.*
 
 newtest  Test6
 ${APETAG} -i ${MP3_CLONE} -m update -f "test.sh"=${BIN1} -p "test"="file" -r "externalcover"="/dev/zero"
