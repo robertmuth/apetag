@@ -136,6 +136,15 @@ Items:
 Type	RO/RW	Field	Value
 BIN	RW	Test.sh
 ============================================================
+test ImportExportTag
+No valid APE tag found
+Found APE tag at offset 193
+Items:
+Type	RO/RW	Field	Value
+TXT	RW	Title	--title2--
+RSC	RW	testpage	http://bo.gus/website/page.html
+BIN	RW	test.sh
+============================================================
 test Test1
 Found APE tag at offset 193
 Items:
